@@ -1,23 +1,19 @@
 import React from "react";
 
 class Item extends React.Component {
-    constructor(item) {
+    constructor(data) {
         super();
-        this.item = item;
-        this.createdDate = this.setCurrentDate();
-        this.modifiedDate = this.setCurrentDate();
+        this.data = data;
+        this.createdDate = this.getCurrentDate();
+        this.modifiedDate = this.getCurrentDate();
     }
 
-    setModifiedDate() {
-        this.modifiedDate = this.setCurrentDate();
-    }
-
-    setCurrentDate() {
+    getCurrentDate() {
         return new Date().toLocaleString('ko-KR');
     }
 }
 
-class ItemList extends React.Component {
+class ItemStorage extends React.Component {
     constructor(item) {
         super();
         this.list = [];
@@ -31,8 +27,8 @@ class ItemList extends React.Component {
         }
     }
 
-    createItem(item) {
-        const boardItem = new Item({ ...item, 'id': this.count++ });
+    createItem(data) {
+        const boardItem = new Item({ ...data, 'id': this.count++ });
         this.list.push(boardItem);
     }
 
@@ -42,15 +38,10 @@ class ItemList extends React.Component {
         }
     }
 
-    updateItem(oldItem) {
+    updateItem(data) {
         if (this.currentIndex !== -1) {
-            let newItem = {
-                item: oldItem.item,
-                createdDate: oldItem.createdDate,
-            };
-
-            newItem.setModifiedDate();
-
+            let newItem = new Item(data);
+            newItem = { ...newItem, createdDate: this.list[this.currentIndex].createdDate }
             this.list[this.currentIndex] = newItem;
         }
     }
@@ -61,6 +52,18 @@ class ItemList extends React.Component {
             this.currentIndex = -1;
         }
     }
+
+    getItem() {
+        let result;
+
+        if (this.currentIndex !== -1) {
+            result = this.list[this.currentIndex];
+
+            return result;
+        }
+
+        return null;
+    }
 }
 
-export default ItemList;
+export default ItemStorage;

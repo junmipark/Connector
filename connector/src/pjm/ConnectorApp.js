@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import ItemList from "./ItemComponents";
+import React from "react";
+import ItemStorage from "./ItemStorage";
 
 import styles from './css/connector-app.css';
 
@@ -9,7 +9,7 @@ import styles from './css/connector-app.css';
  */
 
 
-const items = new ItemList();
+const items = new ItemStorage();
 
 function ConnectorApp(props) {
     const [list, setList] = React.useState(props.qnaStorage);
@@ -26,6 +26,7 @@ function ConnectorApp(props) {
 }
 
 function QnA(props) {
+    const tagArray = ['JavaScript', 'HTML', 'CSS', 'React'];
     return (
         <div className="qna-area">
             <div className="qna-tag-title">
@@ -34,10 +35,11 @@ function QnA(props) {
             </div>
             <div className="qna-tag-list">
                 <Tag tagName="All" selected="selected" />
-                <Tag tagName="JS" />
-                <Tag tagName="HTML" />
-                <Tag tagName="CSS" />
-                <Tag tagName="React" />
+                {
+                    tagArray.map((tag, index) => {
+                        return <Tag tagName={tag} key={index} />
+                    })
+                }
             </div>
             <BoardArea qnaStorage={props.qnaStorage} />
         </div>
@@ -72,7 +74,7 @@ function BoardArea(props) {
         setIsModal
     }
 
-    const writeHandler = (event) => {
+    const writeHandler = () => {
         setIsModal(true);
     }
 
@@ -83,7 +85,7 @@ function BoardArea(props) {
 
             {
                 items.list.map((listItem, index) => {
-                    return <BoardItem key={index} listItem={listItem} setInitState={setInitState} />
+                    return <BoardItem key={index} index={index} listItem={listItem} setInitState={setInitState} modal={modal} />
                 })
             }
         </div>
@@ -94,8 +96,13 @@ function BoardModal(props) {
     const modal = props.modal;
     const setInitState = props.setInitState;
 
-    const [title, setTitle] = React.useState('');
-    const [contents, setContents] = React.useState('');
+    const currentItem = items.getItem();
+
+    const [title, setTitle] = React.useState(currentItem ? currentItem.data.title : '');
+    const [contents, setContents] = React.useState(currentItem ? currentItem.data.contents : '');
+
+    // 포커스 효과를 주기 위해 선언한 레퍼런스
+    const inputRef = React.useRef(null);
 
     const titleHandler = (event) => {
         setTitle(event.target.value);
@@ -105,27 +112,35 @@ function BoardModal(props) {
         setContents(event.target.value);
     }
 
-    const confirmHandler = (event) => {
+    const confirmHandler = () => {
         const newItem = {
             title,
             contents
         }
 
-        if (title === '' && contents === '') {
+        if (title === '' || contents === '') {
             return null;
         }
 
-        items.createItem(newItem);
+        if (currentItem) {
+            items.updateItem(newItem);
+        } else {
+            items.createItem(newItem);
+        }
         setInitState();
     }
 
-    const cancleHandler = (event) => {
+    const cancleHandler = () => {
         modal.setIsModal(false);
     }
 
+    React.useEffect(() => {
+        inputRef.current.focus();
+    }, []);
+
     return (
         <dialog open className="qna-modal">
-            <input type="text" value={title} onChange={titleHandler} placeholder="제목을 입력하세요." />
+            <input type="text" value={title} ref={inputRef} onChange={titleHandler} placeholder="제목을 입력하세요." />
             <textarea onChange={contentsHandler} placeholder="내용을 입력하세요." defaultValue={contents}></textarea>
             <div>
                 <button className="qna-board-button" onClick={confirmHandler}>등록하기</button>
@@ -138,10 +153,15 @@ function BoardModal(props) {
 function BoardItem(props) {
     const listItem = props.listItem;
 
+    const clickHandler = (index) => {
+        items.setCurrentIndex(index);
+        props.modal.setIsModal(true);
+    }
+
     return (
-        <div className="qna-board-item">
+        <div className="qna-board-item" onClick={() => { clickHandler(props.index) }}>
             <div>
-                <span>{listItem.item.title}</span>
+                <span>{listItem.data.title}</span>
                 <span className="qna-item-date">{listItem.createdDate}</span>
             </div>
             <div className="qna-item-answer">

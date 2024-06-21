@@ -13,6 +13,10 @@
     background-color: gainsboro;
 }
 
+.qna-area span,button {
+    user-select: none;
+}
+
 .qna-area {
     display: flex;
     flex-direction: column;
@@ -54,7 +58,6 @@
 
 .qna-tag-list {
     display: flex;
-    flex-direction: row;
 }
 
 .qna-tag-element {

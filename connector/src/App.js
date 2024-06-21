@@ -15,7 +15,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Connector TEST
+          Connector TEST GUI TEST
         </a>
       </header>
     </div>

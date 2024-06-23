@@ -3,29 +3,30 @@ import QnaStorage from "./model/QnaStorage";
 import styles from './css/connector-app.css';
 
 const items = new QnaStorage();
-let qnaList = window.localStorage.getItem('qnaList');
-
-if (!qnaList) {
-    qnaList = []
-} else {
-    qnaList = JSON.parse(qnaList);
-}
 
 function ConnectorApp(props) {
-    const [list, setList] = React.useState(qnaList);
-    items.setList(list);
-    const listState = {
-        list,
-        setList
+    let qnaList = window.localStorage.getItem('qnaList');
+
+    if (!qnaList) {
+        qnaList = []
+    } else {
+        qnaList = JSON.parse(qnaList);
     }
+
     return (
         <div className="container">
-            <QnA listState={listState} />
+            <QnA qnaList={qnaList} />
         </div >
     )
 }
 
 function QnA(props) {
+    const [list, setList] = React.useState(props.qnaList);
+    items.setList(list);
+    const listState = {
+        list,
+        setList
+    }
     const tagArray = ['JavaScript', 'HTML', 'CSS', 'React'];
     return (
         <div className="qna-area">
@@ -55,9 +56,12 @@ function Tag(props) {
 }
 
 function BoardArea(props) {
+    // props를 통해 전달받은 데이터
+    const [list, setList] = [props.listState.list, props.listState.setList];
+
+    // 새로 정의되는 state
     const [isModal, setIsModal] = React.useState(false);
     const [isNew, setIsNew] = React.useState(0);
-    const [list, setList] = [props.listState.list, props.listState.setList];
 
     const setInitState = () => {
         setIsModal(false);
@@ -85,7 +89,7 @@ function BoardArea(props) {
 
             {
                 items.list.map((listItem, index) => {
-                    return <BoardItem key={index} index={index} listItem={listItem} setInitState={setInitState} modal={modal} />
+                    return <BoardItem key={index} index={index} listItem={listItem} modal={modal} />
                 })
             }
         </div>

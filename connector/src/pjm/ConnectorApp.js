@@ -22,11 +22,20 @@ function ConnectorApp(props) {
 
 function QnA(props) {
     const [list, setList] = React.useState(props.qnaList);
+    const [selected, setSelected] = React.useState('All');
+
     items.setList(list);
+
     const listState = {
         list,
         setList
     }
+
+    const selectedState = {
+        selected,
+        setSelected
+    }
+
     const tagArray = ['JavaScript', 'HTML', 'CSS', 'React'];
     return (
         <div className="qna-area">
@@ -35,10 +44,10 @@ function QnA(props) {
                 <span className="board-title">개발자 Q&A 게시판</span>
             </div>
             <div className="qna-tag-list">
-                <Tag tagName="All" selected="selected" />
+                <Tag tagName="All" selectedState={selectedState} />
                 {
                     tagArray.map((tag, index) => {
-                        return <Tag tagName={tag} key={index} />
+                        return <Tag tagName={tag} key={index} selectedState={selectedState} />
                     })
                 }
             </div>
@@ -48,8 +57,14 @@ function QnA(props) {
 }
 
 function Tag(props) {
+    const [selected, setSelected] = [props.selectedState.selected, props.selectedState.setSelected];
+
+    const clickHandler = (tagName) => {
+        setSelected(tagName);
+    }
+
     return (
-        <div className={`qna-tag-element${props.selected ? " selected" : ""}`}>
+        <div className={`qna-tag-element${props.tagName === selected ? " selected" : ""}`} onClick={() => { clickHandler(props.tagName); }}>
             <span>{props.tagName}</span>
         </div>
     )

@@ -1,21 +1,7 @@
-import React from "react";
+import Item from "./Item";
 
-class Item extends React.Component {
-    constructor(data) {
-        super();
-        this.data = data;
-        this.createdDate = this.getCurrentDate();
-        this.modifiedDate = this.getCurrentDate();
-    }
-
-    getCurrentDate() {
-        return new Date().toLocaleString('ko-KR');
-    }
-}
-
-class ItemStorage extends React.Component {
-    constructor(item) {
-        super();
+class ItemStorage {
+    constructor() {
         this.list = [];
         this.count = 0;
         this.currentIndex = -1;
@@ -27,15 +13,19 @@ class ItemStorage extends React.Component {
         }
     }
 
-    createItem(data) {
-        const boardItem = new Item({ ...data, 'id': this.count++ });
-        this.list.push(boardItem);
+    setIndexDefault() {
+        this.currentIndex = -1;
     }
 
     setCurrentIndex(index) {
         if (index >= 0 && index < this.list.length) {
             this.currentIndex = index;
         }
+    }
+
+    createItem(data) {
+        const boardItem = new Item({ ...data, 'id': this.count++ });
+        this.list.push(boardItem);
     }
 
     updateItem(data) {

@@ -42,7 +42,7 @@ function QnA(props) {
                     })
                 }
             </div>
-            <BoardArea listState={props.listState} />
+            <BoardArea listState={listState} />
         </div>
     )
 }
@@ -173,7 +173,7 @@ function BoardItem(props) {
             </div>
             <div className="qna-item-answer">
                 <span>답변</span>
-                <span>7</span>
+                <span>{listItem.answerList.length}</span>
             </div>
         </div>
     )

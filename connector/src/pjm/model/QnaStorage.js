@@ -1,6 +1,7 @@
 import ItemStorage from "./ItemStorage";
 import QuestionItem from "./QuestionItem";
 import AnswerItem from "./AnswerItem";
+import Item from "./Item";
 
 class QnaStorage extends ItemStorage {
     constructor() {
@@ -20,8 +21,8 @@ class QnaStorage extends ItemStorage {
     updateQuestion(data) {
         try {
             if (this.currentIndex !== -1) {
-                let newQuestion = new QuestionItem(data);
-                newQuestion = { ...newQuestion, createdDate: this.list[this.currentIndex].createdDate }
+                const currentQuestion = this.list[this.currentIndex];
+                const newQuestion = { ...currentQuestion, 'data': { ...data, 'id': currentQuestion.data.id }, 'modifiedDate': new Item().getCurrentDate() };
                 this.list[this.currentIndex] = newQuestion;
             }
         } catch {
@@ -47,7 +48,7 @@ class QnaStorage extends ItemStorage {
             if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
                 const questionId = currentQuestion.id;
-                const newAnswer = new AnswerItem(data, questionId);
+                const newAnswer = new AnswerItem({ ...data, 'id': currentQuestion.answerCount++ }, questionId);
                 currentQuestion.answerList.push(newAnswer);
                 this.list[this.currentIndex] = currentQuestion;
             }
@@ -60,9 +61,8 @@ class QnaStorage extends ItemStorage {
         try {
             if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
-                const questionId = currentQuestion.id;
-                let newAnswer = new AnswerItem(data, questionId);
-                newAnswer = { ...newAnswer, createdDate: currentQuestion.answerList[answerIndex].createdDate };
+                const currentAnswer = currentQuestion.answerList[answerIndex];
+                const newAnswer = { ...currentAnswer, 'data': { ...data, 'id': currentAnswer.data.id }, 'modifiedDate': new Item().getCurrentDate() };
                 currentQuestion.answerList[answerIndex] = newAnswer;
             }
         } catch {

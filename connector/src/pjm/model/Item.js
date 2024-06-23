@@ -10,10 +10,6 @@ class Item {
         this.modifiedDate = this.getCurrentDate();
     }
 
-    setData(data) {
-        this.data = data;
-    }
-
     getCurrentDate() {
         return new Date().toLocaleString('ko-KR');
     }

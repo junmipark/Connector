@@ -6,6 +6,7 @@ const items = new QnaStorage();
 
 function ConnectorApp(props) {
     let qnaList = window.localStorage.getItem('qnaList');
+    const lastIndex = window.localStorage.getItem('lastIndex');
 
     if (!qnaList) {
         qnaList = []
@@ -15,7 +16,7 @@ function ConnectorApp(props) {
 
     return (
         <div className="container">
-            <QnA qnaList={qnaList} />
+            <QnA qnaList={qnaList} lastIndex={lastIndex} />
         </div >
     )
 }
@@ -51,7 +52,7 @@ function QnA(props) {
                     })
                 }
             </div>
-            <BoardArea listState={listState} />
+            <BoardArea listState={listState} lastIndex={props.lastIndex} />
         </div>
     )
 }
@@ -76,19 +77,19 @@ function BoardArea(props) {
 
     // 새로 정의되는 state
     const [showBoardModal, setShowBoardModal] = React.useState(false);
-    const [detailsIndex, setDetailsIndex] = React.useState(-1);
+    const [detailsIndex, setDetailsIndex] = React.useState(props.lastIndex ? props.lastIndex : -1);
     const [isNew, setIsNew] = React.useState(0);
 
     const setInitState = () => {
         setShowBoardModal(false);
-        setDetailsIndex(-1);
         setList(items.list);
         setIsNew(isNew + 1);
     }
 
     React.useEffect(() => {
         window.localStorage.setItem('qnaList', JSON.stringify(list));
-    }, [isNew, list]);
+        window.localStorage.setItem('lastIndex', detailsIndex);
+    }, [isNew, list, detailsIndex]);
 
     const modalStates = {
         showBoardModal: showBoardModal,
@@ -224,7 +225,9 @@ function BoardItem(props) {
 
 function BoardItemDetails(props) {
     const listItem = props.listItem;
+
     const [contents, setContents] = React.useState('');
+    const textareaRef = React.useRef(null);
 
     const changeHandler = (event) => {
         setContents(event.target.value);
@@ -238,6 +241,8 @@ function BoardItemDetails(props) {
             alert('답변이 등록되지 않았습니다.');
             return null;
         }
+        textareaRef.current.value = '';
+        setContents('');
         props.setInitState();
     }
 
@@ -246,7 +251,7 @@ function BoardItemDetails(props) {
             <QuestionItem listItem={listItem} index={props.index} modalStates={props.modalStates} detailsStates={props.detailsStates} setInitState={props.setInitState} />
             <div className="qna-answer-textarea">
                 <span className="answer-title">답변 등록하기</span>
-                <textarea value={contents} onChange={changeHandler}
+                <textarea ref={textareaRef} value={contents} onChange={changeHandler}
                     placeholder={listItem.answerList.length === 0 ? '첫 답변을 등록해보세요!' : '답변을 등록해보세요!'}></textarea>
                 <div className="question-buttons">
                     <button className="qna-board-button" onClick={clickHandler}>등록하기</button>
@@ -340,6 +345,7 @@ function AnswerItem(props) {
         items.setCurrentIndex(props.questionIndex);
         const result = items.updateAnswer({ contents }, answerIndex) ? '답변이 수정되었습니다.' : '답변이 수정되지 않았습니다.';
         window.alert(result);
+        textareaRef.current.value = '';
         props.setInitState();
     }
 

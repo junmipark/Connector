@@ -151,11 +151,13 @@ function BoardModal(props) {
             return null;
         }
 
+        let result;
         if (currentItem) {
-            items.updateQuestion(newItem);
+            result = items.updateQuestion(newItem) ? '게시글이 수정되었습니다.' : '게시글이 수정되지 않았습니다.';
         } else {
-            items.createQuestion(newItem);
+            result = items.createQuestion(newItem) ? '게시글이 등록되었습니다.' : '게시글이 등록되지 않았습니다.';
         }
+        alert(result);
         setInitState();
     }
 
@@ -229,7 +231,13 @@ function BoardItemDetails(props) {
     }
 
     const clickHandler = (event) => {
-        items.createAnswer({ contents });
+        const result = items.createAnswer({ contents });
+        if (result) {
+            alert('답변이 등록되었습니다.');
+        } else {
+            alert('답변이 등록되지 않았습니다.');
+            return null;
+        }
         props.setInitState();
     }
 

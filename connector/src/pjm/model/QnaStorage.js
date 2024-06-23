@@ -9,51 +9,76 @@ class QnaStorage extends ItemStorage {
 
     createQuestion(data) {
         const question = new QuestionItem({ ...data, 'id': this.count++ });
-        this.list.push(question);
+        try {
+            this.list.push(question);
+        } catch {
+            return false;
+        }
+        return true;
     }
 
     updateQuestion(data) {
-        if (this.currentIndex !== -1) {
-            let newQuestion = new QuestionItem(data);
-            newQuestion = { ...newQuestion, createdDate: this.list[this.currentIndex].createdDate }
-            this.list[this.currentIndex] = newQuestion;
-        }
+        try {
+            if (this.currentIndex !== -1) {
+                let newQuestion = new QuestionItem(data);
+                newQuestion = { ...newQuestion, createdDate: this.list[this.currentIndex].createdDate }
+                this.list[this.currentIndex] = newQuestion;
+            }
+        } catch {
+            return false
+        } return true;
     }
 
     deleteQuestion() {
-        if (this.currentIndex !== -1) {
-            this.list.splice(this.currentIndex, 1);
-            this.currentIndex = -1;
-            return true;
-        } return false;
+        try {
+            if (this.currentIndex !== -1) {
+                this.list.splice(this.currentIndex, 1);
+                this.currentIndex = -1;
+            }
+        } catch {
+            return false;
+        }
+        return true;
     }
 
     createAnswer(data) {
-        if (this.currentIndex !== -1) {
-            const currentQuestion = this.list[this.currentIndex];
-            const questionId = currentQuestion.id;
-            const newAnswer = new AnswerItem(data, questionId);
-            currentQuestion.answerList.push(newAnswer);
-            this.list[this.currentIndex] = currentQuestion;
-        }
+        try {
+
+            if (this.currentIndex !== -1) {
+                const currentQuestion = this.list[this.currentIndex];
+                const questionId = currentQuestion.id;
+                const newAnswer = new AnswerItem(data, questionId);
+                currentQuestion.answerList.push(newAnswer);
+                this.list[this.currentIndex] = currentQuestion;
+            }
+        } catch {
+            return false;
+        } return true;
     }
 
     updateAnswer(data, answerIndex) {
-        if (this.currentIndex !== -1) {
-            const currentQuestion = this.list[this.currentIndex];
-            const newAnswer = currentQuestion.answerList[answerIndex];
-            newAnswer.data = data;
-            currentQuestion.answerList[answerIndex] = newAnswer;
-            return true;
-        } return false;
+        try {
+            if (this.currentIndex !== -1) {
+                const currentQuestion = this.list[this.currentIndex];
+                const newAnswer = currentQuestion.answerList[answerIndex];
+                newAnswer.data = data;
+                currentQuestion.answerList[answerIndex] = newAnswer;
+            }
+        } catch {
+            return false;
+        } return true;
     }
 
     deleteAnswer(answerIndex) {
-        if (this.currentIndex !== -1) {
-            const currentQuestion = this.list[this.currentIndex];
-            currentQuestion.answerList.splice(answerIndex, 1);
-            return true;
-        } return false;
+        try {
+            if (this.currentIndex !== -1) {
+                const currentQuestion = this.list[this.currentIndex];
+                currentQuestion.answerList.splice(answerIndex, 1);
+
+            }
+        } catch {
+            return false;
+        } return true;
     }
 }
 

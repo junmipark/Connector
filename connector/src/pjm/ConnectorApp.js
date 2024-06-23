@@ -97,6 +97,8 @@ function BoardModal(props) {
     const modal = props.modal;
     const setInitState = props.setInitState;
 
+    const currentItem = items.getItem();
+
     // 글쓰기 작성 시 나타나는 입력 컴포넌트에 연결된 states
     const [title, setTitle] = React.useState(currentItem ? currentItem.data.title : '');
     const [contents, setContents] = React.useState(currentItem ? currentItem.data.contents : '');
@@ -132,6 +134,7 @@ function BoardModal(props) {
 
     const cancleHandler = () => {
         modal.setIsModal(false);
+        items.currentIndex = -1;
     }
 
     React.useEffect(() => {

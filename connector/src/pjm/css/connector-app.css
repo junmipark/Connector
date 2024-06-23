@@ -1,9 +1,12 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR&family=Noto+Sans+KR:wght@100..900&display=swap');
 
 * {
     margin: 0;
     padding: 0;
-    font-family: 'Pretendard';
+    font-family: "Noto Sans KR", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+
 }
 
 .container {
@@ -13,7 +16,8 @@
     background-color: gainsboro;
 }
 
-.qna-area span,button {
+.qna-area span,
+button {
     user-select: none;
 }
 
@@ -21,7 +25,7 @@
     display: flex;
     flex-direction: column;
     width: 1200px;
-    height: 100vh;
+    min-height: 100vh;
     background-color: white;
     box-sizing: border-box;
     padding: 30px;
@@ -85,6 +89,7 @@
 
 .qna-board-list {
     display: grid;
+    border-bottom: 1px solid gainsboro;
 }
 
 .qna-board-button {
@@ -117,18 +122,41 @@
     transition: 0.1s;
 }
 
-.qna-board-item:hover {
+.qna-board-item.item-details {
+    display: block;
+}
+
+.item-details-close {
+    display: inline-block;
+}
+
+.item-details-close:after {
+    display: inline-block;
+    content: "\00d7";
+    font-size: xx-large;
+}
+
+.item-details-close:hover {
     cursor: pointer;
+}
+
+.qna-board-item.item-title:hover,
+.qna-board-item.item-title.clicked {
     color: white;
     background-color: darkslateblue;
 }
 
-.qna-board-item:hover>.qna-item-answer {
-    background-color: black;
+.qna-board-item.item-title:hover {
+    cursor: pointer;
 }
 
-.qna-board-item:last-child {
-    border-bottom: 1px solid gainsboro;
+.qna-board-item.item-title.clicked:hover {
+    cursor: default;
+}
+
+.qna-board-item.item-title:hover>.qna-item-answer,
+.qna-board-item.item-title.clicked>.qna-item-answer {
+    background-color: black;
 }
 
 .qna-board-item>*:first-child {
@@ -136,9 +164,111 @@
     flex-direction: column;
 }
 
-.qna-item-date {
+.qna-item-date,
+.question-date-data {
     font-size: smaller;
+}
+
+.qna-item-date {
     color: gray;
+}
+
+.qna-question,
+.qna-answer-textarea {
+    padding: 10px;
+}
+
+.question-title {
+    display: flex;
+    align-items: center;
+    font-size: xx-large;
+}
+
+.question-dates>* {
+    margin-inline-end: 10px;
+}
+
+.question-contents {
+    font-size: larger;
+    padding: 30px 0;
+}
+
+.question-contents>pre {
+    display: block;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+
+.question-contents>textarea {
+    min-height: 500px;
+}
+
+.question-tag {
+    padding: 5px 10px;
+    font-weight: bolder;
+    border: none;
+    border-radius: 10px;
+    margin-inline-end: 10px;
+    transition: 0.3s;
+}
+
+.question-tag:hover {
+    cursor: pointer;
+    background-color: darkslateblue;
+    color: white;
+}
+
+.question-option {
+    display: grid;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.question-buttons {
+    justify-self: end;
+}
+
+.qna-answer {
+    display: grid;
+    gap: 10px;
+    padding: 30px 10px;
+    grid-template-columns: 10% 90%;
+}
+
+.qna-answer>.qna-item-answer {
+    justify-self: auto;
+}
+
+.qna-answer-area {
+    display: grid;
+    gap: 20px;
+}
+
+.qna-answer-textarea {
+    display: grid;
+    gap: 10px;
+}
+
+.qna-answer-textarea>.answer-title {
+    font-size: larger;
+    font-weight: bolder;
+}
+
+.qna-answer-textarea>textarea,
+.answer-contents {
+    min-height: 200px;
+    border: 1px solid gainsboro;
+    resize: none;
+}
+
+.answer-contents {
+    padding: 20px;
+}
+
+.qna-answer-notfound {
+    display: flex;
+    justify-content: center;
 }
 
 .qna-item-answer {
@@ -167,14 +297,17 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 0.5px solid whitesmoke;
+}
+
+.qna-modal {
     position: fixed;
     right: 0;
     bottom: 0;
     width: 500px;
     height: 500px;
-    padding: 10px;
-    box-sizing: border-box;
-    border: 0.5px solid whitesmoke;
 }
 
 .qna-modal>input[type="text"],

@@ -15,28 +15,6 @@ class QuestionItem extends Item {
         this.answerCount = 0;
         this.answerList = [];
     }
-
-    addAnswerItem(answerItem) {
-        if (answerItem) {
-            answerItem = { ...answerItem, id: this.answerCount++ };
-            this.answerList.push(answerItem);
-            return true;
-        } return false;
-    }
-
-    removeAnswerItem(answerIndex) {
-        if (answerIndex > -1 && answerIndex < this.answerList.length) {
-            const [removedAnswer] = this.answerList.splice(answerIndex, 1);
-            return removedAnswer;
-        } return null;
-    }
-
-    getAnswerItem(answerIndex) {
-        if (answerIndex > -1 && answerIndex < this.answerList.length) {
-            return this.answerList[answerIndex];
-        }
-        return null;
-    }
 }
 
 export default QuestionItem;

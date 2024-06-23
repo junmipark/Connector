@@ -24,7 +24,8 @@ class QnaStorage extends ItemStorage {
         if (this.currentIndex !== -1) {
             this.list.splice(this.currentIndex, 1);
             this.currentIndex = -1;
-        }
+            return true;
+        } return false;
     }
 
     createAnswer(data) {
@@ -32,26 +33,27 @@ class QnaStorage extends ItemStorage {
             const currentQuestion = this.list[this.currentIndex];
             const questionId = currentQuestion.id;
             const newAnswer = new AnswerItem(data, questionId);
-            if (currentQuestion.addAnswerItem(newAnswer)) {
-                this.list[this.currentIndex] = currentQuestion;
-            }
+            currentQuestion.answerList.push(newAnswer);
+            this.list[this.currentIndex] = currentQuestion;
         }
     }
 
     updateAnswer(data, answerIndex) {
         if (this.currentIndex !== -1) {
             const currentQuestion = this.list[this.currentIndex];
-            const newAnswer = currentQuestion.removeAnswerItem(answerIndex);
-            newAnswer.setData(data);
-            currentQuestion.addAnswerItem(newAnswer);
-        }
+            const newAnswer = currentQuestion.answerList[answerIndex];
+            newAnswer.data = data;
+            currentQuestion.answerList[answerIndex] = newAnswer;
+            return true;
+        } return false;
     }
 
     deleteAnswer(answerIndex) {
         if (this.currentIndex !== -1) {
             const currentQuestion = this.list[this.currentIndex];
-            currentQuestion.removeAnswerItem(answerIndex);
-        }
+            currentQuestion.answerList.splice(answerIndex, 1);
+            return true;
+        } return false;
     }
 }
 

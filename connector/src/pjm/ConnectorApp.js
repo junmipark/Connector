@@ -1,26 +1,26 @@
 import React from "react";
-import ItemStorage from "./ItemStorage";
-
+import QnaStorage from "./model/QnaStorage";
 import styles from './css/connector-app.css';
 
-/**
- * item의 구성
- * id, title, contents, ...
- */
+const items = new QnaStorage();
+let qnaList = window.localStorage.getItem('qnaList');
 
-
-const items = new ItemStorage();
+if (!qnaList) {
+    qnaList = []
+} else {
+    qnaList = JSON.parse(qnaList);
+}
 
 function ConnectorApp(props) {
-    const [list, setList] = React.useState(props.qnaStorage);
+    const [list, setList] = React.useState(qnaList);
     items.setList(list);
-    const qnaStorage = {
+    const listState = {
         list,
         setList
     }
     return (
         <div className="container">
-            <QnA qnaStorage={qnaStorage} />
+            <QnA listState={listState} />
         </div >
     )
 }
@@ -41,7 +41,7 @@ function QnA(props) {
                     })
                 }
             </div>
-            <BoardArea qnaStorage={props.qnaStorage} />
+            <BoardArea listState={props.listState} />
         </div>
     )
 }
@@ -57,7 +57,7 @@ function Tag(props) {
 function BoardArea(props) {
     const [isModal, setIsModal] = React.useState(false);
     const [isNew, setIsNew] = React.useState(0);
-    const [list, setList] = [props.qnaStorage.list, props.qnaStorage.setList];
+    const [list, setList] = [props.listState.list, props.listState.setList];
 
     const setInitState = () => {
         setIsModal(false);
@@ -66,7 +66,7 @@ function BoardArea(props) {
     }
 
     React.useEffect(() => {
-        window.localStorage.setItem('qnaStorage', JSON.stringify(list));
+        window.localStorage.setItem('qnaList', JSON.stringify(list));
     }, [isNew, list]);
 
     const modal = {
@@ -125,16 +125,16 @@ function BoardModal(props) {
         }
 
         if (currentItem) {
-            items.updateItem(newItem);
+            items.updateQuestion(newItem);
         } else {
-            items.createItem(newItem);
+            items.createQuestion(newItem);
         }
         setInitState();
     }
 
     const cancleHandler = () => {
         modal.setIsModal(false);
-        items.currentIndex = -1;
+        items.setIndexDefault();
     }
 
     React.useEffect(() => {

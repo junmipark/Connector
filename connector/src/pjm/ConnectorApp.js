@@ -93,16 +93,16 @@ function BoardArea(props) {
 }
 
 function BoardModal(props) {
+    // props를 통해 전달받은 데이터
     const modal = props.modal;
     const setInitState = props.setInitState;
 
-    const currentItem = items.getItem();
-
+    // 글쓰기 작성 시 나타나는 입력 컴포넌트에 연결된 states
     const [title, setTitle] = React.useState(currentItem ? currentItem.data.title : '');
     const [contents, setContents] = React.useState(currentItem ? currentItem.data.contents : '');
 
     // 포커스 효과를 주기 위해 선언한 레퍼런스
-    const inputRef = React.useRef(null);
+    const titleRef = React.useRef(null);
 
     const titleHandler = (event) => {
         setTitle(event.target.value);
@@ -135,12 +135,12 @@ function BoardModal(props) {
     }
 
     React.useEffect(() => {
-        inputRef.current.focus();
+        titleRef.current.focus();
     }, []);
 
     return (
         <dialog open className="qna-modal">
-            <input type="text" value={title} ref={inputRef} onChange={titleHandler} placeholder="제목을 입력하세요." />
+            <input type="text" value={title} ref={titleRef} onChange={titleHandler} placeholder="제목을 입력하세요." />
             <textarea onChange={contentsHandler} placeholder="내용을 입력하세요." defaultValue={contents}></textarea>
             <div>
                 <button className="qna-board-button" onClick={confirmHandler}>등록하기</button>

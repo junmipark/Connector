@@ -60,8 +60,9 @@ class QnaStorage extends ItemStorage {
         try {
             if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
-                const newAnswer = currentQuestion.answerList[answerIndex];
-                newAnswer.data = data;
+                const questionId = currentQuestion.id;
+                let newAnswer = new AnswerItem(data, questionId);
+                newAnswer = { ...newAnswer, createdDate: currentQuestion.answerList[answerIndex].createdDate };
                 currentQuestion.answerList[answerIndex] = newAnswer;
             }
         } catch {

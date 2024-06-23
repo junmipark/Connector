@@ -295,8 +295,8 @@ function QuestionItem(props) {
                     <span>{listItem.data.title}</span>
                 </div>
                 <div className="question-dates">
-                    <span className="qna-item-date question-date-data">작성일: {listItem.createdDate}</span>
-                    {listItem.createdDate !== listItem.modifiedDate && <span className="qna-item-date question-date-data">(최종 수정일: {listItem.modifiedDate})</span>}
+                    <span className="qna-item-date question-date-data">작성: {listItem.createdDate}</span>
+                    {listItem.createdDate !== listItem.modifiedDate && <span className="qna-item-date question-date-data">(최종 수정: {listItem.modifiedDate})</span>}
                 </div>
                 <div className="question-contents">
                     <pre>{listItem.data.contents}</pre>
@@ -345,7 +345,7 @@ function AnswerItem(props) {
         items.setCurrentIndex(props.questionIndex);
         const result = items.updateAnswer({ contents }, answerIndex) ? '답변이 수정되었습니다.' : '답변이 수정되지 않았습니다.';
         window.alert(result);
-        textareaRef.current.value = '';
+        setShowTextarea(false);
         props.setInitState();
     }
 
@@ -370,8 +370,8 @@ function AnswerItem(props) {
                     {showTextarea ? <textarea ref={textareaRef} onChange={changeHandler} value={contents}></textarea> : <pre>{contents}</pre>}
                 </div>
                 <div className="question-dates">
-                    <span className="question-date-data">작성일: {createdDate}</span>
-                    {createdDate !== modifiedDate && <span className="question-date-data">최종 수정일: {modifiedDate}</span>}
+                    <span className="question-date-data">작성: {createdDate}</span>
+                    {createdDate !== modifiedDate && <span className="question-date-data">(최종 수정: {modifiedDate})</span>}
                 </div>
                 <div className="question-buttons">
                     <button className="qna-board-button" onClick={() => {

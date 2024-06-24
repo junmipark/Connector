@@ -9,6 +9,9 @@ class QnaStorage extends ItemStorage {
         this.tags = new Set();
     }
 
+    /**
+     * 질문 게시글 CRUD
+     */
     createQuestion(data) {
         let question = new QuestionItem(data);
         question = { ...question, 'id': this.count++ }
@@ -46,6 +49,10 @@ class QnaStorage extends ItemStorage {
         }
         return true;
     }
+
+    /**
+     * 답변 게시글 CRUD
+     */
 
     createAnswer(data) {
         try {
@@ -90,6 +97,9 @@ class QnaStorage extends ItemStorage {
         return true;
     }
 
+    /**
+     * 상단에 표시되는 태그들
+     */
     setTags(tags) {
         tags.forEach(tag => {
             this.tags.add(tag);

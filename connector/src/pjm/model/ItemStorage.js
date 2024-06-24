@@ -24,14 +24,15 @@ class ItemStorage {
     }
 
     createItem(data) {
-        const boardItem = new Item({ ...data, 'id': this.count++ });
-        this.list.push(boardItem);
+        let newItem = new Item(data);
+        newItem = { ...newItem, 'id': this.count++ }
+        this.list.push(newItem);
     }
 
     updateItem(data) {
         if (this.currentIndex !== -1) {
-            let newItem = new Item(data);
-            newItem = { ...newItem, createdDate: this.list[this.currentIndex].createdDate }
+            const currentItem = this.list[this.currentIndex];
+            let newItem = { ...currentItem, 'data': data, 'modifiedDate': new Item().getCurrentDate() }
             this.list[this.currentIndex] = newItem;
         }
     }

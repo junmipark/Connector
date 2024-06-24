@@ -9,7 +9,8 @@ class QnaStorage extends ItemStorage {
     }
 
     createQuestion(data) {
-        const question = new QuestionItem({ ...data, 'id': this.count++ });
+        let question = new QuestionItem(data);
+        question = { ...question, 'id': this.count++ }
         try {
             this.list.push(question);
         } catch {
@@ -22,12 +23,13 @@ class QnaStorage extends ItemStorage {
         try {
             if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
-                const newQuestion = { ...currentQuestion, 'data': { ...data, 'id': currentQuestion.data.id }, 'modifiedDate': new Item().getCurrentDate() };
+                const newQuestion = { ...currentQuestion, 'data': data, 'modifiedDate': new Item().getCurrentDate() };
                 this.list[this.currentIndex] = newQuestion;
             }
         } catch {
             return false
-        } return true;
+        }
+        return true;
     }
 
     deleteQuestion() {
@@ -48,13 +50,15 @@ class QnaStorage extends ItemStorage {
             if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
                 const questionId = currentQuestion.id;
-                const newAnswer = new AnswerItem({ ...data, 'id': currentQuestion.answerCount++ }, questionId);
+                let newAnswer = new AnswerItem(data, questionId);
+                newAnswer = { ...newAnswer, id: currentQuestion.answerCount++ }
                 currentQuestion.answerList.push(newAnswer);
                 this.list[this.currentIndex] = currentQuestion;
             }
         } catch {
             return false;
-        } return true;
+        }
+        return true;
     }
 
     updateAnswer(data, answerIndex) {
@@ -62,12 +66,13 @@ class QnaStorage extends ItemStorage {
             if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
                 const currentAnswer = currentQuestion.answerList[answerIndex];
-                const newAnswer = { ...currentAnswer, 'data': { ...data, 'id': currentAnswer.data.id }, 'modifiedDate': new Item().getCurrentDate() };
+                const newAnswer = { ...currentAnswer, 'data': data, 'modifiedDate': new Item().getCurrentDate() };
                 currentQuestion.answerList[answerIndex] = newAnswer;
             }
         } catch {
             return false;
-        } return true;
+        }
+        return true;
     }
 
     deleteAnswer(answerIndex) {
@@ -79,7 +84,8 @@ class QnaStorage extends ItemStorage {
             }
         } catch {
             return false;
-        } return true;
+        }
+        return true;
     }
 }
 

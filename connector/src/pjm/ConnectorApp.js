@@ -173,8 +173,8 @@ function BoardModal(props) {
 
     return (
         <dialog open className="qna-modal">
-            <input type="text" value={title} ref={titleRef} onChange={titleHandler} placeholder="제목을 입력하세요." />
-            <textarea onChange={contentsHandler} placeholder="내용을 입력하세요." defaultValue={contents}></textarea>
+            <input type="text" title="title" value={title} ref={titleRef} onChange={titleHandler} placeholder="제목을 입력하세요." />
+            <textarea title="contents" onChange={contentsHandler} placeholder="내용을 입력하세요." defaultValue={contents}></textarea>
             <div>
                 <button className="qna-board-button" onClick={confirmHandler}>등록하기</button>
                 <button className="qna-board-button" onClick={cancleHandler}>취소하기</button>
@@ -251,7 +251,7 @@ function BoardItemDetails(props) {
             <QuestionItem listItem={listItem} index={props.index} modalStates={props.modalStates} detailsStates={props.detailsStates} setInitState={props.setInitState} />
             <div className="qna-answer-textarea">
                 <span className="answer-title">답변 등록하기</span>
-                <textarea ref={textareaRef} value={contents} onChange={changeHandler}
+                <textarea title="contents" ref={textareaRef} value={contents} onChange={changeHandler}
                     placeholder={listItem.answerList.length === 0 ? '첫 답변을 등록해보세요!' : '답변을 등록해보세요!'}></textarea>
                 <div className="question-buttons">
                     <button className="qna-board-button" onClick={clickHandler}>등록하기</button>

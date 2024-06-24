@@ -1,0 +1,254 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR&family=Noto+Sans+KR:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Noto Sans KR", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: gainsboro;
+}
+
+.container textarea {
+    border: 1px solid gray;
+    padding: 10px;
+    resize: none;
+    min-height: 200px;
+}
+
+/*
+    게시판 전체 영역
+*/
+.board {
+    display: flex;
+    gap: 20px;
+    flex-direction: column;
+    width: 1200px;
+    min-height: 100vh;
+    background-color: white;
+    box-sizing: border-box;
+    padding: 30px;
+}
+
+.board-title {
+    display: flex;
+    width: 100%;
+    padding-bottom: 10px;
+    flex-direction: column;
+    border-bottom: 1px solid gainsboro;
+}
+
+.board-tags {
+    display: flex;
+    list-style-type: none;
+}
+
+.board-tag {
+    padding: 10px 20px;
+    margin-inline-end: 10px;
+    border-radius: 50px;
+    transition: 0.3s;
+    border: none;
+}
+
+.board-tag:hover {
+    cursor: pointer;
+    color: white;
+    background-color: rgb(78, 78, 78);
+}
+
+.board-tag.selected {
+    background-color: darkblue;
+}
+
+/*
+    게시글 쓰기, 게시글 목록보기, 게시글 상세보기를 제공하는 영역
+*/
+
+.board-area {
+    display: grid;
+    gap: 10px;
+}
+
+.board-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    transition: 0.3s;
+    margin-inline-end: 10px;
+}
+
+.board-button#write {
+    justify-self: end;
+}
+
+.board-button:hover {
+    background-color: darkblue;
+    color: white;
+    cursor: pointer;
+}
+
+/*
+    게시글 목록
+*/
+
+.board-table,
+.board-table tr {
+    width: 100%;
+    box-sizing: border-box;
+    transition: 0.1s;
+    border: 1px solid gainsboro;
+    border-collapse: collapse;
+}
+
+.board-table td {
+    padding: 20px;
+    max-width: 1140px;
+    box-sizing: border-box;
+}
+
+.post:hover,
+.post.clicked {
+    background-color: darkslateblue;
+    color: white;
+}
+
+.post.clicked .post-text {
+    color: white;
+}
+
+.post:hover {
+    cursor: pointer;
+}
+
+.post:hover .post-text {
+    color: whitesmoke;
+}
+
+.post-item {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 90% 10%;
+    align-items: center;
+}
+
+.post-item>.post-reply {
+    justify-self: end;
+}
+
+.post-text {
+    font-size: smaller;
+    color: gray;
+    margin-inline-end: 10px;
+}
+
+.post-tags>* {
+    margin-right: 10px;
+}
+
+.post-reply {
+    display: flex;
+    width: 75px;
+    height: 75px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: whitesmoke;
+    text-align: center;
+    border-radius: 100%;
+}
+
+.post-item:hover>.post-reply,
+.post.clicked .post-reply {
+    background-color: black;
+}
+
+.post-reply-text {
+    font-size: smaller;
+}
+
+.post-reply-size {
+    font-size: larger;
+}
+
+.post-details {
+    display: grid;
+    padding: 10px 0;
+}
+
+.post-details>* {
+    max-width: 1140px;
+    margin-block-end: 10px;
+}
+
+.post-dates {
+    margin-inline-end: 10px;
+}
+
+.post-contents {
+    display: block;
+    overflow: auto;
+    white-space: pre-wrap;
+    line-height: 2;
+}
+
+.post-code {
+    font-family: "Nanum Gothic Coding", monospace;
+    font-weight: 400;
+    font-style: normal;
+    font-size: small;
+    color: gray;
+    background-color: whitesmoke;
+    padding: 30px;
+}
+
+.post-tag {
+    color: gray;
+    font-size: smaller;
+    border: none;
+    border-radius: 5px;
+}
+
+.post-buttons {
+    justify-self: end;
+}
+
+.answer-item {
+    display: grid;
+}
+
+.answer-textarea {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+}
+
+.answer-textarea>button {
+    justify-self: end;
+}
+
+.modal {
+    display: grid;
+    gap: 20px;
+    width: 600px;
+    padding: 20px;
+}
+
+.modal input,
+.modal textarea {
+    padding: 10px;
+    font-size: large;
+    padding: 10px;
+}
+
+.modal-buttons {
+    justify-self: end;
+}

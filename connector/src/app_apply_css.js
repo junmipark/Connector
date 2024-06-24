@@ -1,6 +1,8 @@
 import React from "react";
 import QnaStorage from "./model/QnaStorage";
 
+import style from "./css/app.css";
+
 // QnA 데이터를 저장하는 저장소
 const qnaStorage = new QnaStorage();
 
@@ -42,6 +44,7 @@ function App(props) {
     const localStorage = {
         qnaList,
         qnaTagList,
+        createQnaTagList,
         lastIndex
     }
 
@@ -87,7 +90,7 @@ function Board(props) {
     function setInitState() {
         setShowModal(false);
         setList(qnaStorage.list);
-        setTags(qnaStorage.tags);
+        setTags(localStorage.createQnaTagList(qnaStorage.list));
         setIsNew(isNew + 1);
     }
 
@@ -95,8 +98,14 @@ function Board(props) {
      * 글 작성 버튼을 클릭하였을 때 모달이 표시되도록 구현
      */
     const writeHandler = () => {
-        qnaStorage.setIndexDefault();
-        setShowModal(true);
+        if (!showModal) {
+            qnaStorage.setIndexDefault();
+            setCurrentIndex(-1);
+            setShowModal(true);
+        } else {
+            window.alert('글쓰기 창이 활성화되어 있습니다! 작성 종료 후 다시 시도하세요.');
+            return null;
+        }
     }
 
     /**
@@ -109,14 +118,14 @@ function Board(props) {
     }, [isNew, list, tags, currentIndex]);
 
     return (
-        <>
+        <div className="board">
             {
                 /**
                  * 모달창을 띄운 상태인지 확인하여, 모달창이 활성화(showModal === true) 된 경우에만 보이도록 구현
                  */
                 showModal ? <Modal states={states} setInitState={setInitState} /> : null
             }
-            <div>
+            <div className="board-title">
                 <h1>Connector</h1>
                 <h2>개발자 QnA 게시판</h2>
             </div>
@@ -126,11 +135,11 @@ function Board(props) {
                  * 태그를 선택하여 해당하는 태그만 조회할 수 있도록 구현
                  */
             }
-            <ul>
-                <li><button>All</button></li>
+            <ul className="board-tags">
+                <li><button className="board-tag">All</button></li>
                 {
                     Array.from(tags).map((tag) => {
-                        return <li key={tag}><button>{tag}</button></li>
+                        return <li key={tag}><button className="board-tag">{tag}</button></li>
                     })
                 }
             </ul>
@@ -139,9 +148,9 @@ function Board(props) {
                  * 게시판 영역
                  */
             }
-            <div>
-                <button onClick={writeHandler}>글쓰기</button>
-                <table>
+            <div className="board-area">
+                <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
+                <table className="board-table">
                     <tbody>
                         {
                             /**
@@ -154,7 +163,7 @@ function Board(props) {
                     </tbody>
                 </table>
             </div>
-        </>
+        </div>
     )
 }
 
@@ -182,23 +191,25 @@ function Post(props) {
     }
     return (
         <>
-            <tr onClick={() => { readHandler(index); }}>
-                <td>
-                    <p>{item.data.title}</p>
-                    <p>{item.createdDate}</p>
-                    <p>
-                        {
-                            Array.from(item.data.tags).map((tag) => {
-                                return <span key={tag}>{tag}</span>
-                            })
-                        }
-                    </p>
-                </td>
-                <td>
-                    <p>답변</p>
-                    <p>{item.answerList.length}</p>
-                </td>
-            </tr>
+            <tr className={`post ${index === states.currentIndex && 'clicked'}`} onClick={() => { readHandler(index); }}>
+                <td className="post-item">
+                    <div>
+                        <p>{item.data.title}</p>
+                        <p className="post-text">{item.createdDate}</p>
+                        <p className="post-tags">
+                            {
+                                Array.from(item.data.tags).map((tag) => {
+                                    return <span className="post-tag" key={tag}>{tag}</span>
+                                })
+                            }
+                        </p>
+                    </div>
+                    <div className="post-reply">
+                        <p className="post-reply-text">답변</p>
+                        <p className="post-reply-size">{item.answerList.length}</p>
+                    </div>
+                </td >
+            </tr >
             {
                 showItem && states.currentIndex === props.index && <PostItem item={item} index={index} states={states} setInitState={setInitState} />
             }
@@ -219,8 +230,13 @@ function PostItem(props) {
     }
 
     const updateHandler = (index) => {
-        qnaStorage.setCurrentIndex(index);
-        states.setShowModal(true);
+        if (!states.showModal) {
+            qnaStorage.setCurrentIndex(index);
+            states.setShowModal(true);
+        } else {
+            window.alert('글쓰기 창이 활성화되어 있습니다! 작성 종료 후 다시 시도하세요.');
+            return null;
+        }
     }
 
     const deleteHandler = (index) => {
@@ -237,21 +253,26 @@ function PostItem(props) {
 
     return (
         <tr>
-            <td colSpan={2}>
-                <div>
-                    <h1>{item.data.title}</h1>
-                    <span>작성: {item.data.createdDate}</span>
-                    <span>최종 수정: {item.data.modifiedDate}</span>
-                    <pre>{item.data.code}</pre>
-                    <pre>{item.data.contents}</pre>
-                    {
-                        Array.from(item.data.tags).map((tag) => {
-                            return <button key={tag}>{tag}</button>
-                        })
-                    }
-                    <button onClick={() => { updateHandler(index) }}>수정하기</button>
-                    <button onClick={() => { deleteHandler(index) }}>삭제하기</button>
-                    <hr />
+            <td>
+                <div className="post-details">
+                    <h3 className="post-title">{item.data.title}</h3>
+                    <div className="post-dates">
+                        <span className="post-text">작성: {item.createdDate}</span>
+                        <span className="post-text">최종 수정: {item.modifiedDate}</span>
+                    </div>
+                    {item.data.code.length > 0 && <pre className="post-contents post-code">{item.data.code}</pre>}
+                    <pre className="post-contents">{item.data.contents}</pre>
+                    <div className="post-tags">
+                        {
+                            Array.from(item.data.tags).map((tag) => {
+                                return <button className="board-tag" key={tag}>{tag}</button>
+                            })
+                        }
+                    </div>
+                    <div className="post-buttons">
+                        <button className="board-button" onClick={() => { updateHandler(index) }}>수정하기</button>
+                        <button className="board-button" onClick={() => { deleteHandler(index) }}>삭제하기</button>
+                    </div>
                 </div>
                 <Reply states={newStates} setInitState={setInitState} />
             </td>
@@ -261,6 +282,13 @@ function PostItem(props) {
 
 function Reply(props) {
     const [states, setInitState] = [props.states, props.setInitState];
+    const [currentReply, setCurrentReply] = React.useState(-1);
+
+    const newStates = {
+        ...states,
+        currentReply,
+        setCurrentReply
+    }
 
     qnaStorage.setCurrentIndex(states.questionIndex);
     const currentItem = qnaStorage.getItem();
@@ -292,17 +320,17 @@ function Reply(props) {
     }
 
     return (
-        <>
-            <div>
+        <div className="post-details">
+            <div className="answer-textarea">
                 <textarea title="contents" placeholder="답변을 작성하세요." value={contents} onChange={changeHandler}></textarea>
-                <button onClick={writeHandler}>등록하기</button>
+                <button className="board-button" onClick={writeHandler}>등록하기</button>
             </div>
             {
                 currentItem.answerList.map((item, index) => {
-                    return <ReplyItem item={item} index={index} states={states} setInitState={setInitState} />
+                    return <ReplyItem item={item} index={index} states={newStates} setInitState={setInitState} />
                 })
             }
-        </>
+        </div>
     )
 }
 
@@ -310,14 +338,19 @@ function ReplyItem(props) {
     const [item, index] = [props.item, props.index];
     const [states, setInitState] = [props.states, props.setInitState];
 
-    const [showTextarea, setShowTextarea] = React.useState(false);
     const [contents, setContents] = React.useState(item.data.contents);
+    const [showTextarea, setShowTextarea] = React.useState(false);
+
+    function isCurrentItem() {
+        return showTextarea && index === states.currentReply;
+    }
 
     const changeHandler = (event) => {
         setContents(event.target.value);
     }
 
     const clickHandler = (index) => {
+        states.setCurrentReply(index);
         setShowTextarea(true);
     }
 
@@ -341,34 +374,38 @@ function ReplyItem(props) {
     }
 
     return (
-        <div>
+        <div className="answer-item">
             <span>{index + 1}</span>
-            <pre>{item.data.contents}</pre>
-            <span>작성: {item.createdDate}</span>
-            <span>최종 수정: {item.modifiedDate}</span>
             {
                 /**
                  * showTextArea === true
                  * (현재 상태가 수정모드인 경우, textarea를 보이도록 구현)
                  */
-                showTextarea && (
-                    <textarea title="newContents" onChange={changeHandler} value={contents}></textarea>
-                )
+                isCurrentItem() ?
+                    <textarea className="post-contents" title="contents" onChange={changeHandler} value={contents}></textarea>
+                    :
+                    <pre className="post-contents">{item.data.contents}</pre>
             }
-            <button onClick={() => {
-                if (showTextarea) {
-                    updateHandler(index);
-                } else {
-                    clickHandler(index);
-                }
-            }}>수정하기</button>
-            <button onClick={() => {
-                if (showTextarea) {
-                    setShowTextarea(false);
-                } else {
-                    deleteHandler(index);
-                }
-            }}>{showTextarea ? '취소하기' : '삭제하기'}</button>
+            <div className="post-dates">
+                <span className="post-text">작성: {item.createdDate}</span>
+                <span className="post-text">최종 수정: {item.modifiedDate}</span>
+            </div>
+            <div className="post-buttons">
+                <button className="board-button" onClick={() => {
+                    if (isCurrentItem()) {
+                        updateHandler(index);
+                    } else {
+                        clickHandler(index);
+                    }
+                }}>수정하기</button>
+                <button className="board-button" onClick={() => {
+                    if (isCurrentItem()) {
+                        setShowTextarea(false);
+                    } else {
+                        deleteHandler(index);
+                    }
+                }}>{isCurrentItem() ? '취소하기' : '삭제하기'}</button>
+            </div>
         </div>
     )
 }
@@ -382,12 +419,11 @@ function Modal(props) {
      * 즉 게시글을 새로 작성하는 것을 뜻함
      */
     const currentItem = qnaStorage.getItem();
-
     /**
      * 제목 title, 소스코드 code, 내용 contents, 태그 tags
      */
     const [title, setTitle] = React.useState(currentItem ? currentItem.data.title : '');
-    const [code, setCode] = React.useState(currentItem ? currentItem.data.sourceCode : '');
+    const [code, setCode] = React.useState(currentItem ? currentItem.data.code : '');
     const [contents, setContents] = React.useState(currentItem ? currentItem.data.contents : '');
     const [tags, setTags] = React.useState(currentItem ? Array.from(currentItem.data.tags).join() : '');
 
@@ -408,7 +444,7 @@ function Modal(props) {
         for (const i in newTags) {
             newTags[i] = newTags[i].trim();
         }
-        return newTags;
+        return Array.from(new Set(newTags));
     }
 
     const changeHandler = (event) => {
@@ -466,18 +502,19 @@ function Modal(props) {
     }
 
     return (
-        <dialog open>
+        <dialog open className="modal">
             <input type="text" title="title" value={title}
-                onChange={changeHandler} placeholder="제목을 입력하세요." />
-            <textarea title="code" value={code}
-                onChange={changeHandler} placeholder="소스코드를 기입하세요."></textarea>
-            <textarea title="contents" value={contents}
-                onChange={changeHandler} placeholder="내용을 입력하세요."></textarea>
+                onChange={changeHandler} placeholder="제목" />
+            <textarea className="post-contents post-code" title="code" value={code}
+                onChange={changeHandler} placeholder="소스코드"></textarea>
+            <textarea className="post-contents" title="contents" value={contents}
+                onChange={changeHandler} placeholder="게시글 내용"></textarea>
             <input type="text" title="tags" value={tags}
-                onChange={changeHandler} placeholder="콤마(,)로 구분하여 작성하세요." />
-            <hr />
-            <button onClick={confirmHandler}>등록하기</button>
-            <button onClick={cancleHandler}>취소하기</button>
+                onChange={changeHandler} placeholder="태그: 콤마(,)로 구분하여 작성하세요." />
+            <div className="modal-buttons">
+                <button className="board-button" onClick={confirmHandler}>등록하기</button>
+                <button className="board-button" onClick={cancleHandler}>취소하기</button>
+            </div>
         </dialog>
     )
 }

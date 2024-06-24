@@ -5,31 +5,49 @@ import styles from './css/connector-app.css';
 const items = new QnaStorage();
 
 function ConnectorApp(props) {
+    // 저장되어 있는 QnA 데이터
     let qnaList = window.localStorage.getItem('qnaList');
     const lastIndex = window.localStorage.getItem('lastIndex');
 
-    if (!qnaList) {
-        qnaList = []
-    } else {
-        qnaList = JSON.parse(qnaList);
+    const getQnaTagList = (qnaList) => {
+        let qnaTagList = [];
+        Array.from(qnaList).forEach(qna => {
+            Array.from(qna.data.tags).forEach(tag => {
+                qnaTagList.push(tag);
+            })
+        });
+        return new Set(qnaTagList);
+    }
+
+    qnaList = qnaList ? JSON.parse(qnaList) : [];
+    let qnaTagList = getQnaTagList(qnaList);
+
+    const localStorage = {
+        qnaList,
+        qnaTagList,
+        lastIndex
     }
 
     return (
         <div className="container">
-            <QnA qnaList={qnaList} lastIndex={lastIndex} />
+            <QnA localStorage={localStorage} />
         </div >
     )
 }
 
 function QnA(props) {
-    const [list, setList] = React.useState(props.qnaList);
+    const [list, setList] = React.useState(props.localStorage.qnaList);
+    const [tags, setTags] = React.useState(props.localStorage.qnaTagList);
     const [selected, setSelected] = React.useState('All');
 
     items.setList(list);
+    items.setTags(tags);
 
     const listState = {
         list,
-        setList
+        setList,
+        tags,
+        setTags
     }
 
     const selectedState = {
@@ -37,7 +55,6 @@ function QnA(props) {
         setSelected
     }
 
-    const tagArray = ['JavaScript', 'HTML', 'CSS', 'React'];
     return (
         <div className="qna-area">
             <div className="qna-tag-title">
@@ -47,7 +64,7 @@ function QnA(props) {
             <div className="qna-tag-list">
                 <Tag tagName="All" selectedState={selectedState} />
                 {
-                    tagArray.map((tag, index) => {
+                    Array.from(tags).map((tag, index) => {
                         return <Tag tagName={tag} key={index} selectedState={selectedState} />
                     })
                 }
@@ -74,6 +91,7 @@ function Tag(props) {
 function BoardArea(props) {
     // props를 통해 전달받은 데이터
     const [list, setList] = [props.listState.list, props.listState.setList];
+    const [tags, setTags] = [props.listState.tags, props.listState.setTags];
 
     // 새로 정의되는 state
     const [showBoardModal, setShowBoardModal] = React.useState(false);
@@ -83,13 +101,15 @@ function BoardArea(props) {
     const setInitState = () => {
         setShowBoardModal(false);
         setList(items.list);
+        setTags(items.tags);
         setIsNew(isNew + 1);
     }
 
     React.useEffect(() => {
         window.localStorage.setItem('qnaList', JSON.stringify(list));
+        window.localStorage.setItem('qnaTagList', JSON.stringify(tags));
         window.localStorage.setItem('lastIndex', detailsIndex);
-    }, [isNew, list, detailsIndex]);
+    }, [isNew, list, tags, detailsIndex]);
 
     const modalStates = {
         showBoardModal: showBoardModal,
@@ -130,6 +150,7 @@ function BoardModal(props) {
     // 글쓰기 작성 시 나타나는 입력 컴포넌트에 연결된 states
     const [title, setTitle] = React.useState(currentItem ? currentItem.data.title : '');
     const [contents, setContents] = React.useState(currentItem ? currentItem.data.contents : '');
+    const [tags, setTags] = React.useState(currentItem ? Array.from(currentItem.data.tags).join() : '');
 
     // 포커스 효과를 주기 위해 선언한 레퍼런스
     const titleRef = React.useRef(null);
@@ -142,13 +163,27 @@ function BoardModal(props) {
         setContents(event.target.value);
     }
 
+    const tagsHandler = (event) => {
+        setTags(event.target.value);
+    }
+
+    const createTagList = (tagString) => {
+        let newTags = tagString.split(',');
+        for (const i in newTags) {
+            newTags[i] = newTags[i].trim();
+        }
+        return newTags;
+    }
+
     const confirmHandler = () => {
+        const newTags = createTagList(tags);
         const newItem = {
             title,
-            contents
+            contents,
+            'tags': newTags
         }
 
-        if (title === '' || contents === '') {
+        if (title === '' || contents === '' || newTags.length < 1) {
             return null;
         }
 
@@ -174,7 +209,11 @@ function BoardModal(props) {
     return (
         <dialog open className="qna-modal">
             <input type="text" title="title" value={title} ref={titleRef} onChange={titleHandler} placeholder="제목을 입력하세요." />
-            <textarea title="contents" onChange={contentsHandler} placeholder="내용을 입력하세요." defaultValue={contents}></textarea>
+            <textarea title="contents" value={contents} onChange={contentsHandler} placeholder="내용을 입력하세요."></textarea>
+            <div>
+                <label>태그</label>
+                <input type="text" title="tags" value={tags} onChange={tagsHandler} placeholder="쉼표로 구분하여 작성하세요. (태그1, 태그2, 태그3, ...)" />
+            </div>
             <div>
                 <button className="qna-board-button" onClick={confirmHandler}>등록하기</button>
                 <button className="qna-board-button" onClick={cancleHandler}>취소하기</button>
@@ -201,7 +240,9 @@ function BoardItem(props) {
             setDetailsIndex(index);
             setShowItem(true);
         } else {
-            return null;
+            items.setCurrentIndex(-1);
+            setDetailsIndex(-1);
+            setShowItem(false);
         }
     }
 
@@ -211,6 +252,13 @@ function BoardItem(props) {
                 <div>
                     <span>{listItem.data.title}</span>
                     <span className="qna-item-date">{listItem.createdDate}</span>
+                    <div>
+                        {
+                            Array.from(listItem.data.tags).map((tag, index) => {
+                                return (<span key={index} className="qna-item-date qna-item-tag">{tag}</span>)
+                            })
+                        }
+                    </div>
                 </div>
                 <div className="qna-item-answer">
                     <span>답변</span>
@@ -302,9 +350,13 @@ function QuestionItem(props) {
                     <pre>{listItem.data.contents}</pre>
                 </div>
                 <div className="question-tags">
-                    <button className="question-tag">JavaScript</button>
-                    <button className="question-tag">React</button>
-                    <button className="question-tag">CSS</button>
+                    {
+                        Array.from(listItem.data.tags).map((tag) => {
+                            return (
+                                <button className="question-tag" key={tag}>{tag}</button>
+                            )
+                        })
+                    }
                 </div>
             </div>
             <div className="qna-item-question question-option">

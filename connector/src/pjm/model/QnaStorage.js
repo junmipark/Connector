@@ -6,6 +6,7 @@ import Item from "./Item";
 class QnaStorage extends ItemStorage {
     constructor() {
         super();
+        this.tags = new Set();
     }
 
     createQuestion(data) {
@@ -13,6 +14,7 @@ class QnaStorage extends ItemStorage {
         question = { ...question, 'id': this.count++ }
         try {
             this.list.push(question);
+            this.setTags(data.tags);
         } catch {
             return false;
         }
@@ -25,6 +27,7 @@ class QnaStorage extends ItemStorage {
                 const currentQuestion = this.list[this.currentIndex];
                 const newQuestion = { ...currentQuestion, 'data': data, 'modifiedDate': new Item().getCurrentDate() };
                 this.list[this.currentIndex] = newQuestion;
+                this.setTags(data.tags);
             }
         } catch {
             return false
@@ -46,7 +49,6 @@ class QnaStorage extends ItemStorage {
 
     createAnswer(data) {
         try {
-
             if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
                 const questionId = currentQuestion.id;
@@ -86,6 +88,16 @@ class QnaStorage extends ItemStorage {
             return false;
         }
         return true;
+    }
+
+    setTags(tags) {
+        tags.forEach(tag => {
+            this.tags.add(tag);
+        });
+    }
+
+    getTags() {
+        return Array.from(this.tags);
     }
 }
 

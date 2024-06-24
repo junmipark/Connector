@@ -146,12 +146,23 @@ button {
     background-color: darkslateblue;
 }
 
-.qna-board-item.item-title:hover {
-    cursor: pointer;
+.qna-board-item.item-title.clicked .qna-item-date {
+    color: rgb(240, 240, 240);
 }
 
-.qna-board-item.item-title.clicked:hover {
-    cursor: default;
+
+.qna-item-tag {
+    padding: 3px;
+}
+
+.qna-board-item.item-title:hover .qna-item-tag,
+.qna-board-item.item-title.clicked .qna-item-tag {
+    color: white;
+    background-color: darkslateblue;
+}
+
+.qna-board-item.item-title:hover {
+    cursor: pointer;
 }
 
 .qna-board-item.item-title:hover>.qna-item-answer,

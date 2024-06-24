@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import QnaStorage from "./model/QnaStorage";
 
 // QnA 데이터를 저장하는 저장소
@@ -116,11 +116,6 @@ function Board(props) {
                  */
                 showModal ? <Modal states={states} setInitState={setInitState} /> : null
             }
-            {
-                /**
-                 * 프로젝트 타이틀(사이트 제목) 영역
-                 */
-            }
             <div>
                 <h1>Connector</h1>
                 <h2>개발자 QnA 게시판</h2>
@@ -188,14 +183,16 @@ function Post(props) {
     return (
         <>
             <tr onClick={() => { readHandler(index); }}>
-                <td>{item.data.title}</td>
-                <td>{item.createdDate}</td>
                 <td>
-                    {
-                        Array.from(item.data.tags).map((tag) => {
-                            return (<span key={tag}>{tag}</span>)
-                        })
-                    }
+                    <p>{item.data.title}</p>
+                    <p>{item.createdDate}</p>
+                    <p>
+                        {
+                            Array.from(item.data.tags).map((tag) => {
+                                return <span key={tag}>{tag}</span>
+                            })
+                        }
+                    </p>
                 </td>
                 <td>
                     <p>답변</p>
@@ -240,11 +237,12 @@ function PostItem(props) {
 
     return (
         <tr>
-            <td>
+            <td colSpan={2}>
                 <div>
                     <h1>{item.data.title}</h1>
                     <span>작성: {item.data.createdDate}</span>
                     <span>최종 수정: {item.data.modifiedDate}</span>
+                    <pre>{item.data.code}</pre>
                     <pre>{item.data.contents}</pre>
                     {
                         Array.from(item.data.tags).map((tag) => {

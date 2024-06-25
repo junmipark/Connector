@@ -94,10 +94,63 @@ function Board(props) {
         setIsNew(isNew + 1);
     }
 
+    // 각각 경과시간과 경과일을 반환하는 함수
+    function getTimeInterval(date1, date2) {
+        const time1 = new Date(date1);
+        const time2 = new Date(date2);
+        return time1.getTime() - time2.getTime();
+    }
+
+    function getDateInterval(date1, date2) {
+        return getTimeInterval(date1, date2) / (24 * 60 * 60 * 1000);
+    }
+
+    // 근 7일간 달린 답변 게시글을 가져오는 함수
+    function getLatestList(replys) {
+        const result = Array.from(replys).filter((item) => {
+            return getDateInterval(new Date(), item.modifiedDate) < 7;
+        })
+
+        return result;
+    }
+
+    // 가장 최신 답변 정보를 가져오는 함수
+    function getLastestItem(replys) {
+        const result = getLatestList(replys).sort((item1, item2) => { return getTimeInterval(item1.modifiedDate, item2.modifiedDate) }).pop();
+        return result;
+    }
+
+    // 날짜시간 데이터를 현재 시간으로부터 얼마나 경과되었는지 알려주는 문자열을 반환하는 함수
+    function getDateString(date) {
+        const time = getTimeInterval(new Date(), date) / 1000;
+
+        let result;
+        if (time > 24 * 60 * 60) {
+            result = `${Math.round(time / (24 * 60 * 60))}일 전`;
+        } else if (time > 60 * 60) {
+            result = `${Math.round(time / (60 * 60))}시간 전`;
+        } else if (time > 60) {
+            result = `${Math.round(time / 60)}분 전`;
+        } else {
+            result = `${Math.round(time)}초 전`;
+        }
+
+        return result;
+    }
+
     function getHotTopics() {
-        const sortedList = Array.from(qnaStorage.list).sort((item1, item2) => {
-            return item1.answerList.length - item2.answerList.length
-        }).reverse();
+        /**
+         * 인기 있는 게시글 목록을 반환하는 함수
+         * 1. 근 7일간 답변이 달린 게시글만 저장(repliedList)
+         * 2. 답변이 가장 많이 달린 게시글 순으로 정렬 (sortedList)
+         */
+        const repliedList = Array.from(qnaStorage.list).filter((item) => {
+            return getLatestList(item.answerList).length > 0;
+        });
+
+        const sortedList = Array.from(repliedList).sort((item1, item2) => {
+            return getLatestList(item1.answerList).length > getLatestList(item2.answerList).length;
+        });
 
         const result = sortedList.splice(0, sortedList.length > 5 ? 5 : sortedList.length);
         return result;
@@ -189,11 +242,12 @@ function Board(props) {
                             {
                                 getHotTopics().map((item, index) => {
                                     return (
-                                        <tr className="post hot-topic">
-                                            <td className="post-item hot-topic" key={index}>
+                                        <tr className="post hot-topic" key={index}>
+                                            <td className="post-item hot-topic">
                                                 <p>{item.data.title}</p>
                                                 <p className="post-text">{item.data.contents}</p>
-                                                <p className="post-text">{item.createdDate}</p>
+                                                <p className="post-text">최종 답변: {getDateString(getLastestItem(item.answerList).modifiedDate)}</p>
+                                                <p className="post-text">일주일간 달린 답변의 수: {getLatestList(item.answerList).length}</p>
                                             </td>
                                         </tr>
                                     )
@@ -235,7 +289,7 @@ function Post(props) {
                 <td className="post-item">
                     <div>
                         <p>{item.data.title}</p>
-                        <p className="post-text">{item.createdDate}</p>
+                        <p className="post-text">{new Date(item.createdDate).toLocaleString('ko-KR')}</p>
                         <p className="post-tags">
                             {
                                 Array.from(item.data.tags).map((tag) => {
@@ -297,7 +351,7 @@ function PostItem(props) {
                 <div className="post-details">
                     <h3 className="post-title">{item.data.title}</h3>
                     <div className="post-dates">
-                        <span className="post-text">작성: {item.createdDate} (최종 수정: {item.modifiedDate})</span>
+                        <span className="post-text">작성: {new Date(item.createdDate).toLocaleString('ko-KR')} (최종 수정: {new Date(item.modifiedDate).toLocaleString('ko-KR')})</span>
                     </div>
                     {item.data.code.length > 0 && <pre className="post-contents post-code">{item.data.code}</pre>}
                     <pre className="post-contents">{item.data.contents}</pre>
@@ -426,7 +480,7 @@ function ReplyItem(props) {
                         <pre className="post-contents">{item.data.contents}</pre>
                 }
                 <div className="post-dates">
-                    <span className="post-text">작성: {item.createdDate} (최종 수정: {item.modifiedDate})</span>
+                    <span className="post-text">작성: {new Date(item.createdDate).toLocaleString('ko-KR')} (최종 수정: {new Date(item.modifiedDate).toLocaleString('ko-KR')})</span>
                 </div>
                 <div className="post-buttons">
                     <button className="board-button" onClick={() => {

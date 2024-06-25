@@ -239,6 +239,56 @@ function PostItem(props) {
         }
     }
 
+    /**
+     * 질문 게시글 생성시 입력한 비밀번호와 입력한 비밀번호 비교
+     * 값이 일치하면 기존과 같이 수정가능
+     */
+    const editPasswordCheckHandler = (index) => {
+        if (!states.showModal) {
+            const bbsPassword = prompt('비밀번호를 입력하세요.');
+
+            if (bbsPassword === null) {
+                return;
+            }
+
+            qnaStorage.setCurrentIndex(index);
+            const currentItem = qnaStorage.getItem();
+            const { password } = currentItem.data;
+
+            if (bbsPassword === password) {
+                updateHandler();
+            } else {
+                window.alert('비밀번호가 다릅니다!');
+            }
+        } else {
+            window.alert('글쓰기 창이 활성화되어 있습니다! 작성 종료 후 다시 시도하세요.');
+            return null;
+        }
+    }
+
+    const deletePasswordCheckHandler = (index) => {
+        if (!states.showModal) {
+            const bbsPassword = prompt('비밀번호를 입력하세요.');
+
+            if (bbsPassword === null) {
+                return;
+            }
+
+            qnaStorage.setCurrentIndex(index);
+            const currentItem = qnaStorage.getItem();
+            const { password } = currentItem.data;
+
+            if (bbsPassword === password) {
+                deleteHandler();
+            } else {
+                window.alert('비밀번호가 다릅니다!');
+            }
+        } else {
+            window.alert('글쓰기 창이 활성화되어 있습니다! 작성 종료 후 다시 시도하세요.');
+            return null;
+        }
+    }
+
     const deleteHandler = (index) => {
         qnaStorage.setCurrentIndex(index);
         if (window.confirm('게시글을 삭제하시겠습니까?')) {
@@ -270,8 +320,8 @@ function PostItem(props) {
                         }
                     </div>
                     <div className="post-buttons">
-                        <button className="board-button" onClick={() => { updateHandler(index) }}>수정하기</button>
-                        <button className="board-button" onClick={() => { deleteHandler(index) }}>삭제하기</button>
+                        <button className="board-button" onClick={() => { editPasswordCheckHandler(index) }}>수정하기</button>
+                        <button className="board-button" onClick={() => { deletePasswordCheckHandler(index) }}>삭제하기</button>
                     </div>
                 </div>
                 <Reply states={newStates} setInitState={setInitState} />
@@ -421,16 +471,19 @@ function Modal(props) {
     const currentItem = qnaStorage.getItem();
     /**
      * 제목 title, 소스코드 code, 내용 contents, 태그 tags
+     * 비밀번호 password 추가
      */
     const [title, setTitle] = React.useState(currentItem ? currentItem.data.title : '');
     const [code, setCode] = React.useState(currentItem ? currentItem.data.code : '');
     const [contents, setContents] = React.useState(currentItem ? currentItem.data.contents : '');
+    const [password, setPassword] = React.useState(currentItem ? currentItem.data.password : '');
     const [tags, setTags] = React.useState(currentItem ? Array.from(currentItem.data.tags).join() : '');
 
     function initStates() {
         setTitle('');
         setContents('');
         setCode('');
+        setPassword('');
         setTags('');
     }
 
@@ -455,6 +508,9 @@ function Modal(props) {
             case 'contents':
                 setContents(event.target.value);
                 break;
+            case 'password':
+                setPassword(event.target.value.trim());
+                break;
             case 'tags':
                 setTags(event.target.value);
                 break;
@@ -475,10 +531,11 @@ function Modal(props) {
             title,
             code,
             contents,
+            password,
             'tags': newTags
         }
 
-        if (title === '' || contents === '' || newTags.length < 1) {
+        if (title === '' || contents === '' || password === '' || newTags.length < 1) {
             return null;
         }
 
@@ -509,6 +566,11 @@ function Modal(props) {
                 onChange={changeHandler} placeholder="소스코드"></textarea>
             <textarea className="post-contents" title="contents" value={contents}
                 onChange={changeHandler} placeholder="게시글 내용"></textarea>
+            {/* 게시글 작성시만 비밀번호 입력 가능 */}
+            {!currentItem && (
+                <input type="password" title="password" value={password}
+                    onChange={changeHandler} placeholder="비밀번호를 입력하세요." />
+            )}
             <input type="text" title="tags" value={tags}
                 onChange={changeHandler} placeholder="태그: 콤마(,)로 구분하여 작성하세요." />
             <div className="modal-buttons">

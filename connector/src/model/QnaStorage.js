@@ -7,6 +7,7 @@ class QnaStorage extends ItemStorage {
     constructor() {
         super();
         this.tags = new Set();
+        this.password = '';
     }
 
     /**
@@ -109,6 +110,7 @@ class QnaStorage extends ItemStorage {
     getTags() {
         return Array.from(this.tags);
     }
+
 }
 
 export default QnaStorage;

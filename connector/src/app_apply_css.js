@@ -94,6 +94,15 @@ function Board(props) {
         setIsNew(isNew + 1);
     }
 
+    function getHotTopics() {
+        const sortedList = Array.from(qnaStorage.list).sort((item1, item2) => {
+            return item1.answerList.length - item2.answerList.length
+        }).reverse();
+
+        const result = sortedList.splice(0, sortedList.length > 5 ? 5 : sortedList.length);
+        return result;
+    }
+
     /**
      * 글 작성 버튼을 클릭하였을 때 모달이 표시되도록 구현
      */
@@ -149,19 +158,50 @@ function Board(props) {
                  */
             }
             <div className="board-area">
-                <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
-                <table className="board-table">
-                    <tbody>
-                        {
-                            /**
-                             * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
-                             */
-                            qnaStorage.list.map((item, index) => {
-                                return <Post key={index} index={index} item={item} states={states} setInitState={setInitState} />
-                            })
-                        }
-                    </tbody>
-                </table>
+                <div className="qna">
+                    <table className="board-table qna">
+                        <thead>
+                            <tr>
+                                <th>QnA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                /**
+                                 * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
+                                 */
+                                qnaStorage.list.map((item, index) => {
+                                    return <Post key={index} index={index} item={item} states={states} setInitState={setInitState} />
+                                })
+                            }
+                        </tbody>
+                    </table>
+                    <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
+                </div>
+                <div className="trend">
+                    <table className="board-table hot-topics">
+                        <thead>
+                            <tr>
+                                <th>HOT TOPICS 🔥</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                getHotTopics().map((item, index) => {
+                                    return (
+                                        <tr className="post hot-topic">
+                                            <td className="post-item hot-topic" key={index}>
+                                                <p>{item.data.title}</p>
+                                                <p className="post-text">{item.data.contents}</p>
+                                                <p className="post-text">{item.createdDate}</p>
+                                            </td>
+                                        </tr>
+                                    )
+                                })
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     )
@@ -191,7 +231,7 @@ function Post(props) {
     }
     return (
         <>
-            <tr className={`post ${index === states.currentIndex && 'clicked'}`} onClick={() => { readHandler(index); }}>
+            <tr className={`post${index === states.currentIndex ? ' clicked' : ''}`} onClick={() => { readHandler(index); }}>
                 <td className="post-item">
                     <div>
                         <p>{item.data.title}</p>
@@ -257,8 +297,7 @@ function PostItem(props) {
                 <div className="post-details">
                     <h3 className="post-title">{item.data.title}</h3>
                     <div className="post-dates">
-                        <span className="post-text">작성: {item.createdDate}</span>
-                        <span className="post-text">최종 수정: {item.modifiedDate}</span>
+                        <span className="post-text">작성: {item.createdDate} (최종 수정: {item.modifiedDate})</span>
                     </div>
                     {item.data.code.length > 0 && <pre className="post-contents post-code">{item.data.code}</pre>}
                     <pre className="post-contents">{item.data.contents}</pre>
@@ -327,7 +366,7 @@ function Reply(props) {
             </div>
             {
                 currentItem.answerList.map((item, index) => {
-                    return <ReplyItem item={item} index={index} states={newStates} setInitState={setInitState} />
+                    return <ReplyItem key={index} item={item} index={index} states={newStates} setInitState={setInitState} />
                 })
             }
         </div>
@@ -375,36 +414,36 @@ function ReplyItem(props) {
 
     return (
         <div className="answer-item">
-            <span>{index + 1}</span>
-            {
-                /**
-                 * showTextArea === true
-                 * (현재 상태가 수정모드인 경우, textarea를 보이도록 구현)
-                 */
-                isCurrentItem() ?
-                    <textarea className="post-contents" title="contents" onChange={changeHandler} value={contents}></textarea>
-                    :
-                    <pre className="post-contents">{item.data.contents}</pre>
-            }
-            <div className="post-dates">
-                <span className="post-text">작성: {item.createdDate}</span>
-                <span className="post-text">최종 수정: {item.modifiedDate}</span>
-            </div>
-            <div className="post-buttons">
-                <button className="board-button" onClick={() => {
-                    if (isCurrentItem()) {
-                        updateHandler(index);
-                    } else {
-                        clickHandler(index);
-                    }
-                }}>수정하기</button>
-                <button className="board-button" onClick={() => {
-                    if (isCurrentItem()) {
-                        setShowTextarea(false);
-                    } else {
-                        deleteHandler(index);
-                    }
-                }}>{isCurrentItem() ? '취소하기' : '삭제하기'}</button>
+            <div className="answer-area">
+                {
+                    /**
+                     * showTextArea === true
+                     * (현재 상태가 수정모드인 경우, textarea를 보이도록 구현)
+                     */
+                    isCurrentItem() ?
+                        <textarea className="post-contents" title="contents" onChange={changeHandler} value={contents}></textarea>
+                        :
+                        <pre className="post-contents">{item.data.contents}</pre>
+                }
+                <div className="post-dates">
+                    <span className="post-text">작성: {item.createdDate} (최종 수정: {item.modifiedDate})</span>
+                </div>
+                <div className="post-buttons">
+                    <button className="board-button" onClick={() => {
+                        if (isCurrentItem()) {
+                            updateHandler(index);
+                        } else {
+                            clickHandler(index);
+                        }
+                    }}>수정하기</button>
+                    <button className="board-button" onClick={() => {
+                        if (isCurrentItem()) {
+                            setShowTextarea(false);
+                        } else {
+                            deleteHandler(index);
+                        }
+                    }}>{isCurrentItem() ? '취소하기' : '삭제하기'}</button>
+                </div>
             </div>
         </div>
     )

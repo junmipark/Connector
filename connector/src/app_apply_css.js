@@ -149,8 +149,8 @@ function Board(props) {
         });
 
         const sortedList = Array.from(repliedList).sort((item1, item2) => {
-            return getLatestList(item1.answerList).length > getLatestList(item2.answerList).length;
-        });
+            return getLatestList(item1.answerList).length - getLatestList(item2.answerList).length;
+        }).reverse();
 
         const result = sortedList.splice(0, sortedList.length > 5 ? 5 : sortedList.length);
         return result;

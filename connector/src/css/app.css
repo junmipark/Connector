@@ -48,7 +48,8 @@
 }
 
 .board-title h1 {
-    margin: 50px 0; 
+    margin: 50px 0;
+    color: darkblue;
 }
 
 .board-tags {

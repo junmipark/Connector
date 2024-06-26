@@ -279,7 +279,7 @@ function Board(props) {
                 showModal ? <Modal states={states} setInitState={setInitState} /> : null
             }
             <div className="board-title">
-                <h1>Connector</h1>
+                <h1>CONNECTOR</h1>
                 <h2>개발자 QnA 게시판</h2>
             </div>
             {

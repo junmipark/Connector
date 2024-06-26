@@ -11,7 +11,7 @@ class Item {
     }
 
     getCurrentDate() {
-        return new Date().toLocaleString('ko-KR');
+        return new Date();
     }
 }
 

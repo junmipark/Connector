@@ -1,5 +1,5 @@
 import React from "react";
-import QnaStorage from "./model/QnaStorage_ksh";
+import QnaStorage from "./model/QnaStorage";
 
 import style from "./css/app.css";
 

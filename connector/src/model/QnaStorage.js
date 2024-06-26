@@ -1,6 +1,6 @@
 import ItemStorage from "./ItemStorage";
 import QuestionItem from "./QuestionItem";
-import AnswerItem from "./AnswerItem_ksh";
+import AnswerItem from "./AnswerItem";
 import Item from "./Item";
 
 class QnaStorage extends ItemStorage {

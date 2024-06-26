@@ -76,7 +76,17 @@
 */
 
 .board-options {
+    display: flex;
     width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.board-options>input[name='keyword'] {
+    width: 85%;
+    padding: 10px 20px;
+    border: 1px solid gainsboro;
+    margin-right: 10px;
 }
 
 .board-area {
@@ -87,7 +97,6 @@
 
 .board-area>div {
     display: grid;
-    gap: 10px;
 }
 
 .board-area .qna {

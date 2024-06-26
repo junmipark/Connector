@@ -96,7 +96,7 @@ function Board(props) {
         showModal,
         setShowModal,
         showItem,
-        setShowItem
+        setShowItem,
     }
 
     function setInitState() {
@@ -168,6 +168,12 @@ function Board(props) {
         return result;
     }
 
+    function showCurrentItem(id) {
+        qnaStorage.setCurrentId(id);
+        setCurrentId(id);
+        id !== -1 ? setShowItem(true) : setShowItem(false);
+    }
+
     /**
      * 핫 토픽을 클릭했을 때 이에 해당하는 게시글로 이동하도록 구현
      */
@@ -175,9 +181,7 @@ function Board(props) {
         if (mode !== 'default') {
             setMode('default');
         }
-        qnaStorage.setCurrentId(id);
-        setCurrentId(id);
-        setShowItem(true);
+        showCurrentItem(id);
     }
 
     const changeHandler = (event) => {
@@ -197,6 +201,10 @@ function Board(props) {
 
     const searchHandler = (event) => {
         if (event.type === 'click' || (event.type === 'keydown' && event.key === 'Enter')) {
+            if (keyword === '') {
+                window.alert('검색어를 입력하세요!');
+                return null;
+            }
             setMode('search');
             setCurrentId(-1);
         } else {
@@ -260,7 +268,7 @@ function Board(props) {
                  */
             }
             <div className="board-options">
-                <input type="text" name="keyword" onChange={changeHandler} onKeyDown={searchHandler} />
+                <input type="search" name="keyword" placeholder="🔍 검색어를 입력하세요." onChange={changeHandler} onKeyDown={searchHandler} />
                 <button className="board-button" id="search" onClick={searchHandler}>검색</button>
                 <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
             </div>
@@ -282,15 +290,18 @@ function Board(props) {
                                 /**
                                  * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
                                  */
-                                mode === 'default' && qnaStorage.list.map((item, index) => {
-                                    return <Post key={index} item={item} states={states} setInitState={setInitState} />
+                                mode === 'default' && list.map((item, index) => {
+                                    return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                 })
                             }{
+                                /**
+                                 * 검색 모드인 경우 검색 결과를 출력
+                                 */
                                 mode === 'search' && <>
                                     <td className="search-text">'{keyword}'에 대한 검색 결과입니다.</td>
                                     {
                                         searchList(keyword).map((item, index) => {
-                                            return <Post key={index} item={item} states={states} setInitState={setInitState} />
+                                            return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                         })
                                     }
                                 </>
@@ -307,12 +318,6 @@ function Board(props) {
                         </thead>
                         <tbody>
                             {
-                                /**
-                                 * getHotTopics()를 통해 얻은 배열은 
-                                 * 특정 조건에 따라 배열된 것으로 
-                                 * 원래 answerList의 배열과 다름
-                                 * questionId를 활용하여 클릭 시에 게시글을 보여주도록 구현
-                                 */
                                 getHotTopics().map((item) => {
                                     return (
                                         <tr className="post hot-topic" key={item.id} onClick={() => { clickHandler(item.id) }}>
@@ -337,7 +342,7 @@ function Board(props) {
 
 function Post(props) {
     const [item] = [props.item];
-    const [states, setInitState] = [props.states, props.setInitState];
+    const [states, setInitState, showCurrentItem] = [props.states, props.setInitState, props.showCurrentItem];
     /**
     * 게시글을 선택했을 때 해당 게시글의 상세 내용을 보여주도록 하는 상태 변수들
     * showItem - 게시글의 상세 내용을 표시할 것인지 아닌지를 불린 값으로 저장하는 변수
@@ -347,13 +352,9 @@ function Post(props) {
      */
     const readHandler = (id) => {
         if (id !== states.currentId) {
-            qnaStorage.setCurrentId(id);
-            states.setCurrentId(id);
-            states.setShowItem(true);
+            showCurrentItem(id);
         } else {
-            qnaStorage.setCurrentId(-1);
-            states.setCurrentId(-1);
-            states.setShowItem(false);
+            showCurrentItem(-1);
         }
     }
     return (

@@ -1,13 +1,13 @@
 import ItemStorage from "./ItemStorage";
 import QuestionItem from "./QuestionItem";
-import AnswerItem from "./AnswerItem";
+import AnswerItem from "./AnswerItem_ksh";
 import Item from "./Item";
 
 class QnaStorage extends ItemStorage {
     constructor() {
         super();
-        this.currentId = -1;
         this.tags = new Set();
+        this.password = '';
     }
 
     /**
@@ -15,8 +15,7 @@ class QnaStorage extends ItemStorage {
      */
     createQuestion(data) {
         let question = new QuestionItem(data);
-        this.count += 1;
-        question = { ...question, 'id': this.count }
+        question = { ...question, 'id': this.count++ }
         try {
             this.list.push(question);
             this.setTags(data.tags);
@@ -28,8 +27,7 @@ class QnaStorage extends ItemStorage {
 
     updateQuestion(data) {
         try {
-            if (this.currentId !== -1) {
-                this.setCurrentIndex(this.findIndexById());
+            if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
                 const newQuestion = { ...currentQuestion, 'data': data, 'modifiedDate': new Item().getCurrentDate() };
                 this.list[this.currentIndex] = newQuestion;
@@ -43,8 +41,7 @@ class QnaStorage extends ItemStorage {
 
     deleteQuestion() {
         try {
-            if (this.currentId !== -1) {
-                this.setCurrentIndex(this.findIndexById());
+            if (this.currentIndex !== -1) {
                 this.list.splice(this.currentIndex, 1);
                 this.currentIndex = -1;
             }
@@ -58,13 +55,13 @@ class QnaStorage extends ItemStorage {
      * 답변 게시글 CRUD
      */
 
-    createAnswer(data) {
+    createAnswer(data, password) {
         try {
-            if (this.currentId !== -1) {
-                this.setCurrentIndex(this.findIndexById());
+            if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
-                let newAnswer = new AnswerItem(data, this.currentId);
-                newAnswer = { ...newAnswer, id: currentQuestion.answerCount++ }
+                const questionId = currentQuestion.id;
+                let newAnswer = new AnswerItem(data, questionId);
+                newAnswer = { ...newAnswer, id: currentQuestion.answerCount++, password: password }
                 currentQuestion.answerList.push(newAnswer);
                 this.list[this.currentIndex] = currentQuestion;
             }
@@ -76,8 +73,7 @@ class QnaStorage extends ItemStorage {
 
     updateAnswer(data, answerIndex) {
         try {
-            if (this.currentId !== -1) {
-                this.setCurrentIndex(this.findIndexById());
+            if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
                 const currentAnswer = currentQuestion.answerList[answerIndex];
                 const newAnswer = { ...currentAnswer, 'data': data, 'modifiedDate': new Item().getCurrentDate() };
@@ -91,8 +87,7 @@ class QnaStorage extends ItemStorage {
 
     deleteAnswer(answerIndex) {
         try {
-            if (this.currentId !== -1) {
-                this.setCurrentIndex(this.findIndexById());
+            if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
                 currentQuestion.answerList.splice(answerIndex, 1);
 
@@ -101,31 +96,6 @@ class QnaStorage extends ItemStorage {
             return false;
         }
         return true;
-    }
-
-    findItemById() {
-        let result;
-
-        if (this.currentId !== -1) {
-            this.setCurrentIndex(this.findIndexById());
-            result = this.list[this.currentIndex];
-
-            return result;
-        }
-
-        return null;
-    }
-
-    findIndexById() {
-        return this.list.findIndex((item) => { return item.id === this.currentId });
-    }
-
-    setCurrentId(id) {
-        this.currentId = id;
-    }
-
-    setIdDefault() {
-        this.currentId = -1;
     }
 
     /**
@@ -140,6 +110,7 @@ class QnaStorage extends ItemStorage {
     getTags() {
         return Array.from(this.tags);
     }
+
 }
 
 export default QnaStorage;

@@ -613,7 +613,7 @@ function ReplyItem(props) {
     const [showTextarea, setShowTextarea] = React.useState(false);
     const [answerPassword, setAnswerPassword] = React.useState(item.data.password);
 
-    qnaStorage.setCurrentId(item.id);
+    qnaStorage.setCurrentId(states.questionId);
 
     function isCurrentItem() {
         return showTextarea && index === states.currentReply;

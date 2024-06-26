@@ -193,6 +193,11 @@ function Board(props) {
         }
     }
 
+    const scrollCallBack = (id) => {
+        const target = document.getElementById(id);
+        target.scrollIntoView({ behavior: "smooth" });
+    }
+
     /**
      * 핫 토픽을 클릭했을 때 이에 해당하는 게시글로 이동하도록 구현
      */
@@ -201,6 +206,7 @@ function Board(props) {
             setMode('default');
         }
         showCurrentItem(id);
+        scrollCallBack(id);
     }
 
     function searchList(keyword) {
@@ -303,10 +309,10 @@ function Board(props) {
                         <tbody>
                             {
                                 /**
-                                 * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
-                                 */
+                            * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
+                            */
                                 mode === 'default' && Array.from(list).reverse().map((item, index) => {
-                                    return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
+                                    return <Post key={index} id={item.id} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                 })
                             }{
                                 /**
@@ -316,7 +322,7 @@ function Board(props) {
                                     <td className="search-text">'{keyword}'에 대한 검색 결과입니다.</td>
                                     {
                                         Array.from(searchList(keyword)).reverse().map((item, index) => {
-                                            return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
+                                            return <Post key={index} id={item.id} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                         })
                                     }
                                 </>
@@ -329,7 +335,7 @@ function Board(props) {
                                          * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
                                          */
                                         Array.from(selectedTagList()).reverse().map((item, index) => {
-                                            return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
+                                            return <Post key={index} id={item.id} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                         })
                                     }
                                 </>
@@ -388,7 +394,7 @@ function Post(props) {
     return (
         <>
             <tr className={`post${item.id === states.id ? ' clicked' : ''}`} onClick={() => { readHandler(item.id); }}>
-                <td className="post-item">
+                <td className="post-item" id={props.id}>
                     <div>
                         <p>{item.data.title}</p>
                         <p className="post-text">{new Date(item.createdDate).toLocaleString('ko-KR')}</p>

@@ -69,7 +69,7 @@ function Board(props) {
     const [tags, setTags] = React.useState(localStorage.qnaTagList);
     const [count, setCount] = React.useState(localStorage.qnaCount);
     const [showItem, setShowItem] = React.useState(false);
-    const [currentIndex, setCurrentIndex] = React.useState(false);
+    const [currentId, setCurrentId] = React.useState(false);
 
     const [keyword, setKeyword] = React.useState('');
     const [mode, setMode] = React.useState('default');
@@ -91,8 +91,8 @@ function Board(props) {
      * 하위 컴포넌트로 넘겨줄 상태 변수들
      */
     const states = {
-        currentIndex,
-        setCurrentIndex,
+        currentId,
+        setCurrentId,
         showModal,
         setShowModal,
         showItem,
@@ -172,11 +172,8 @@ function Board(props) {
      * 핫 토픽을 클릭했을 때 이에 해당하는 게시글로 이동하도록 구현
      */
     const clickHandler = (id) => {
-        const index = qnaStorage.list.findIndex((item) => { return item.id === id });
-        console.log(index);
-
-        qnaStorage.setCurrentIndex(index);
-        setCurrentIndex(index);
+        qnaStorage.setCurrentId(id);
+        setCurrentId(id);
         setShowItem(true);
     }
 
@@ -196,6 +193,7 @@ function Board(props) {
     const searchHandler = (event) => {
         if (event.type === 'click' || (event.type === 'keydown' && event.key === 'Enter')) {
             setMode('search');
+            setCurrentId(-1);
         } else {
             return null;
         }
@@ -207,7 +205,7 @@ function Board(props) {
     const writeHandler = () => {
         if (!showModal) {
             qnaStorage.setIndexDefault();
-            setCurrentIndex(-1);
+            setCurrentId(-1);
             setShowModal(true);
         } else {
             window.alert('글쓰기 창이 활성화되어 있습니다! 작성 종료 후 다시 시도하세요.');
@@ -221,8 +219,8 @@ function Board(props) {
     React.useEffect(() => {
         window.localStorage.setItem('qnaList', JSON.stringify(list));
         window.localStorage.setItem('qnaCount', count);
-        window.localStorage.setItem('lastIndex', currentIndex);
-    }, [count, list, tags, currentIndex]);
+        window.localStorage.setItem('lastIndex', currentId);
+    }, [count, list, tags, currentId]);
 
     return (
         <div className="board">
@@ -299,9 +297,9 @@ function Board(props) {
                                  * 원래 answerList의 배열과 다름
                                  * questionId를 활용하여 클릭 시에 게시글을 보여주도록 구현
                                  */
-                                getHotTopics().map((item, index) => {
+                                getHotTopics().map((item) => {
                                     return (
-                                        <tr className="post hot-topic" key={index} onClick={() => { clickHandler(item.id) }}>
+                                        <tr className="post hot-topic" key={item.id} onClick={() => { clickHandler(item.id) }}>
                                             <td className="post-item hot-topic">
                                                 <input type="hidden" name="itemId" />
                                                 <p>{item.data.title}</p>
@@ -322,7 +320,7 @@ function Board(props) {
 }
 
 function Post(props) {
-    const [item, index] = [props.item, props.index];
+    const [item] = [props.item];
     const [states, setInitState] = [props.states, props.setInitState];
     /**
     * 게시글을 선택했을 때 해당 게시글의 상세 내용을 보여주도록 하는 상태 변수들
@@ -331,20 +329,20 @@ function Post(props) {
     /**
      * 질문 게시글을 처리하는 핸들러 함수
      */
-    const readHandler = (index) => {
-        if (index !== states.currentIndex) {
-            qnaStorage.setCurrentIndex(index);
-            states.setCurrentIndex(index);
+    const readHandler = (id) => {
+        if (id !== states.currentId) {
+            qnaStorage.setCurrentId(id);
+            states.setCurrentId(id);
             states.setShowItem(true);
         } else {
-            qnaStorage.setCurrentIndex(-1);
-            states.setCurrentIndex(-1);
+            qnaStorage.setCurrentId(-1);
+            states.setCurrentId(-1);
             states.setShowItem(false);
         }
     }
     return (
         <>
-            <tr className={`post${index === states.currentIndex ? ' clicked' : ''}`} onClick={() => { readHandler(index); }}>
+            <tr className={`post${item.id === states.id ? ' clicked' : ''}`} onClick={() => { readHandler(item.id); }}>
                 <td className="post-item">
                     <div>
                         <p>{item.data.title}</p>
@@ -364,14 +362,14 @@ function Post(props) {
                 </td >
             </tr >
             {
-                states.showItem && states.currentIndex === props.index && <PostItem item={item} index={index} states={states} setInitState={setInitState} />
+                states.showItem && states.currentId === item.id && <PostItem item={item} states={states} setInitState={setInitState} />
             }
         </>
     )
 }
 
 function PostItem(props) {
-    const [item, index] = [props.item, props.index];
+    const [item] = [props.item];
     const [states, setInitState] = [props.states, props.setInitState];
     /**
      * 질문 게시글 하위에 존재하는 답변 게시글에 전달해줄 상태 변수 데이터
@@ -379,12 +377,16 @@ function PostItem(props) {
      */
     const newStates = {
         ...states,
-        'questionIndex': index
+        'questionId': item.id
     }
 
-    const updateHandler = (index) => {
+    function getLocaleString(date) {
+        return new Date(date).toLocaleString('ko-KR');
+    }
+
+    const updateHandler = (id) => {
         if (!states.showModal) {
-            qnaStorage.setCurrentIndex(index);
+            qnaStorage.setCurrentId(id);
             states.setShowModal(true);
         } else {
             window.alert('글쓰기 창이 활성화되어 있습니다! 작성 종료 후 다시 시도하세요.');
@@ -392,8 +394,8 @@ function PostItem(props) {
         }
     }
 
-    const deleteHandler = (index) => {
-        qnaStorage.setCurrentIndex(index);
+    const deleteHandler = (id) => {
+        qnaStorage.setCurrentId(id);
         if (window.confirm('게시글을 삭제하시겠습니까?')) {
             let result;
             result = qnaStorage.deleteQuestion() ? '게시글이 삭제되었습니다.' : '게시글이 삭제되지 않았습니다.';
@@ -410,7 +412,7 @@ function PostItem(props) {
                 <div className="post-details">
                     <h3 className="post-title">{item.data.title}</h3>
                     <div className="post-dates">
-                        <span className="post-text">작성: {new Date(item.createdDate).toLocaleString('ko-KR')} (최종 수정: {new Date(item.modifiedDate).toLocaleString('ko-KR')})</span>
+                        <span className="post-text">작성: {getLocaleString(item.createdDate)} (최종 수정: {getLocaleString(item.modifiedDate)})</span>
                     </div>
                     {item.data.code.length > 0 && <pre className="post-contents post-code">{item.data.code}</pre>}
                     <pre className="post-contents">{item.data.contents}</pre>
@@ -422,8 +424,8 @@ function PostItem(props) {
                         }
                     </div>
                     <div className="post-buttons">
-                        <button className="board-button" onClick={() => { updateHandler(index) }}>수정하기</button>
-                        <button className="board-button" onClick={() => { deleteHandler(index) }}>삭제하기</button>
+                        <button className="board-button" onClick={() => { updateHandler(item.id) }}>수정하기</button>
+                        <button className="board-button" onClick={() => { deleteHandler(item.id) }}>삭제하기</button>
                     </div>
                 </div>
                 <Reply states={newStates} setInitState={setInitState} />
@@ -442,8 +444,8 @@ function Reply(props) {
         setCurrentReply
     }
 
-    qnaStorage.setCurrentIndex(states.questionIndex);
-    const currentItem = qnaStorage.getItem();
+    qnaStorage.setCurrentId(states.questionId);
+    const currentItem = qnaStorage.findItemById(states.questionId);
 
     /**
      * contents --> 답변 작성을 위해 사용하는 상태 변수
@@ -479,7 +481,7 @@ function Reply(props) {
             </div>
             {
                 currentItem.answerList.map((item, index) => {
-                    return <ReplyItem key={index} item={item} index={index} states={newStates} setInitState={setInitState} />
+                    return <ReplyItem key={index} index={index} item={item} states={newStates} setInitState={setInitState} />
                 })
             }
         </div>
@@ -570,7 +572,7 @@ function Modal(props) {
      * currentItem이 null인 건 currentIndex가 -1, 현재 가리키고 있는 값이 없음을 의미 
      * 즉 게시글을 새로 작성하는 것을 뜻함
      */
-    const currentItem = qnaStorage.getItem();
+    const currentItem = qnaStorage.findItemById(states.currentId);
     /**
      * 제목 title, 소스코드 code, 내용 contents, 태그 tags
      */
@@ -644,7 +646,6 @@ function Modal(props) {
         }
 
         window.alert(resultText);
-        console.log(qnaStorage.count)
         setInitState();
     }
 

@@ -73,7 +73,8 @@ function Board(props) {
     const [trendList, setTrendList] = React.useState([]);
 
     //태그 선택 상태 추가, 기본값 All
-    const [selectedTag, setSelectedTag] = React.useState('All');
+    // const [selectedTag, setSelectedTag] = React.useState('All');
+    const [selectedTags, setSelectedTags] = React.useState([]);
 
     const [keyword, setKeyword] = React.useState('');
     const [mode, setMode] = React.useState('default');
@@ -178,15 +179,19 @@ function Board(props) {
     }
 
     function selectedTagList() {
-        return selectedTag === 'All' ? list : list.filter((item) => {
-            console.log(selectedTag, item.data.tags); //디버그
-            return item.data.tags.includes(selectedTag)
-        });
+        if(selectedTags.length === 0) {
+            return list;
+        }
+        else {
+            return list.filter((tag) => {
+                return selectedTags.every(item.data.tags.includes(tag))
+            });
+        }
     }
 
     //선택된 태그 변경 핸들러
     const selectedTagHandler = (tag) => {
-        setSelectedTag(tag);
+        setSelectedTags(tag);
         if (tag === 'All') {
             setMode('default');
         } else {

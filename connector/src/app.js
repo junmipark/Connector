@@ -65,18 +65,19 @@ function Board(props) {
     //태그 선택 상태 추가, 기본값 All
     const [selectedTag, setSelectedTag] = React.useState(['All']);
 
-    //선택된 태그의 게시글 목록
-    const selectedTagList = () => {
-        return selectedTag === 'All' ? list : list.filter((item) => {
-            item.data.tags.includes(selectedTag)
-            console.log(selectedTag, item.data.tags);
-        });
-    }
-
     //선택된 태그 변경 핸들러
     const selectedTagHandler = (tag) => {
         setSelectedTag(tag);
     }
+
+    //선택된 태그의 게시글 목록
+    const selectedTagList = () => {
+        return selectedTag === 'All' ? list : list.filter((item) => {
+            console.log(selectedTag, item.data.tags); //디버그
+            return item.data.tags.includes(selectedTag)
+        });
+    }
+
     
     /**
     * qnaStorage에 localStorage에 저장되어 있는 데이터를 불러와서 초기화!
@@ -122,7 +123,6 @@ function Board(props) {
      */
     React.useEffect(() => {
         window.localStorage.setItem('qnaList', JSON.stringify(list));
-        window.localStorage.setItem('qnaTagList', JSON.stringify(tags));
         window.localStorage.setItem('lastIndex', currentIndex);
     }, [isNew, list, tags, currentIndex]);
 

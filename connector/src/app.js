@@ -818,26 +818,53 @@ function Modal(props) {
         states.setShowModal(false);
     }
 
+    const preventScroll = () => {
+        const currentScrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.top = `-${currentScrollY}px`; // 현재 스크롤 위치
+        document.body.style.overflowY = 'scroll';
+        return currentScrollY;
+    };
+
+    const allowScroll = (prevScrollY) => {
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.top = '';
+        document.body.style.overflowY = '';
+        window.scrollTo(0, prevScrollY);
+    };
+
+    React.useEffect(() => {
+        const prevScrollY = preventScroll();
+        return () => {
+            allowScroll(prevScrollY);
+        };
+    }, []);
+
+
     return (
-        <dialog open className="modal">
-            <input type="text" title="title" value={title}
-                onChange={changeHandler} placeholder="제목" />
-            <textarea className="post-contents post-code" title="code" value={code}
-                onChange={changeHandler} placeholder="소스코드"></textarea>
-            <textarea className="post-contents" title="contents" value={contents}
-                onChange={changeHandler} placeholder="게시글 내용"></textarea>
-            {/* 게시글 작성시만 비밀번호 입력 가능 */}
-            {!currentItem && (
-                <input type="password" title="password" value={password}
-                    onChange={changeHandler} placeholder="비밀번호를 입력하세요." />
-            )}
-            <input type="text" title="tags" value={tags}
-                onChange={changeHandler} placeholder="태그: 콤마(,)로 구분하여 작성하세요." />
-            <div className="modal-buttons">
-                <button className="board-button" onClick={confirmHandler}>등록하기</button>
-                <button className="board-button" onClick={cancleHandler}>취소하기</button>
-            </div>
-        </dialog>
+        <div className="modal-container">
+            <dialog open className="modal">
+                <input type="text" title="title" value={title}
+                    onChange={changeHandler} placeholder="제목" />
+                <textarea className="post-contents post-code" title="code" value={code}
+                    onChange={changeHandler} placeholder="소스코드"></textarea>
+                <textarea className="post-contents" title="contents" value={contents}
+                    onChange={changeHandler} placeholder="게시글 내용"></textarea>
+                {/* 게시글 작성시만 비밀번호 입력 가능 */}
+                {!currentItem && (
+                    <input type="password" title="password" value={password}
+                        onChange={changeHandler} placeholder="비밀번호를 입력하세요." />
+                )}
+                <input type="text" title="tags" value={tags}
+                    onChange={changeHandler} placeholder="태그: 콤마(,)로 구분하여 작성하세요." />
+                <div className="modal-buttons">
+                    <button className="board-button" onClick={confirmHandler}>등록하기</button>
+                    <button className="board-button" onClick={cancleHandler}>취소하기</button>
+                </div>
+            </dialog>
+        </div>
     )
 }
 

@@ -70,6 +70,7 @@ function Board(props) {
     const [count, setCount] = React.useState(localStorage.qnaCount);
     const [showItem, setShowItem] = React.useState(false);
     const [currentId, setCurrentId] = React.useState(false);
+    const [trendList, setTrendList] = React.useState([]);
 
     //태그 선택 상태 추가, 기본값 All
     const [selectedTag, setSelectedTag] = React.useState('All');
@@ -247,6 +248,9 @@ function Board(props) {
         }
     }
 
+    React.useEffect(() => {
+        setTrendList(getHotTopics());
+    }, []);
     /**
      * 화면이 렌더링될 때마다 로컬 스토리지에 현재까지의 데이터를 저장
      */
@@ -308,16 +312,17 @@ function Board(props) {
                         </thead>
                         <tbody>
                             {
-                                /**
-                            * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
-                            */
-                                mode === 'default' && Array.from(list).reverse().map((item, index) => {
-                                    return <Post key={index} id={item.id} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
-                                })
-                            }{
-                                /**
-                                 * 검색 모드인 경우 검색 결과를 출력
-                                 */
+                                /**기본 --> 모든 게시글 보여주기 */
+                                mode === 'default' && <>
+                                    {
+                                        Array.from(list).reverse().map((item, index) => {
+                                            return <Post key={index} id={item.id} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
+                                        })
+                                    }
+                                </>
+                            }
+                            {
+                                /**검색 모드 --> 검색 결과에 해당하는 게시글 보여주기 */
                                 mode === 'search' && <>
                                     <td className="search-text">'{keyword}'에 대한 검색 결과입니다.</td>
                                     {
@@ -328,17 +333,22 @@ function Board(props) {
                                 </>
                             }
                             {
+                                /**태그 모드 --> 해당하는 태그를 포함하는 게시글 보여주기 */
                                 mode === 'tagged' && <>
                                     {
-
-                                        /**
-                                         * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
-                                         */
                                         Array.from(selectedTagList()).reverse().map((item, index) => {
                                             return <Post key={index} id={item.id} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                         })
                                     }
                                 </>
+                            }
+                            {
+                                mode === 'default' && list.length === 0 &&
+                                <tr>
+                                    <td>
+                                        <span className="text-not-found">게시글이 존재하지 않습니다.</span>
+                                    </td>
+                                </tr>
                             }
                         </tbody>
                     </table>
@@ -352,7 +362,7 @@ function Board(props) {
                         </thead>
                         <tbody>
                             {
-                                getHotTopics().map((item) => {
+                                trendList.map((item) => {
                                     return (
                                         <tr className="post hot-topic" key={item.id} onClick={() => { clickHandler(item.id) }}>
                                             <td className="post-item hot-topic">
@@ -365,6 +375,14 @@ function Board(props) {
                                         </tr>
                                     )
                                 })
+                            }
+                            {
+                                mode === 'default' && trendList.length === 0 &&
+                                <tr>
+                                    <td>
+                                        <span className="text-not-found">현재 활성화된 게시글이 없어요!</span>
+                                    </td>
+                                </tr>
                             }
                         </tbody>
                     </table>

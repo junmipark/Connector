@@ -161,6 +161,11 @@
     color: white;
 }
 
+.text-not-found {
+    display: block;
+    text-align: center;
+}
+
 .post:hover,
 .post.clicked {
     background-color: darkslateblue;

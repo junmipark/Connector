@@ -184,7 +184,7 @@ function Board(props) {
         }
         else {
             return list.filter((item) => {
-                return selectedTags.every(tag=>item.data.tags.includes(tag))
+                return selectedTags.some(tag=>item.data.tags.includes(tag))
             });
         }
     }
@@ -223,7 +223,7 @@ function Board(props) {
     function searchList(keyword) {
         const result = Array.from(list).filter((item) => {
             let isCorrect = item.data.title.includes(keyword) || item.data.contents.includes(keyword) || item.data.code.includes(keyword);
-            isCorrect = selectedTags.length === 0 ? isCorrect : isCorrect && selectedTags.every(tag => item.data.tags.includes(tag));
+            isCorrect = selectedTags.length === 0 ? isCorrect : isCorrect && selectedTags.some(tag => item.data.tags.includes(tag));
             return isCorrect;
         })
         return result;

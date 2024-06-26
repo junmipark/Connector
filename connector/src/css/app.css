@@ -322,7 +322,10 @@
 }
 
 .modal {
-    position: relative;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -331,7 +334,11 @@
     border: 1px solid gray;
     border-left: none;
     border-bottom: none;
+}
 
+.modal-title {
+    text-align: center;
+    font-weight: bolder;
 }
 
 .modal input,

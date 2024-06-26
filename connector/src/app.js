@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import QnaStorage from "./model/QnaStorage";
 
 import style from "./css/app.css";
@@ -76,7 +76,7 @@ function Board(props) {
 
     const [keyword, setKeyword] = React.useState('');
     const [mode, setMode] = React.useState('default');
-
+    const keywordRef = React.useRef(null);
     /**
      * qnaStorage에 localStorage에 저장되어 있는 데이터를 불러와서 초기화!
      */
@@ -89,7 +89,6 @@ function Board(props) {
      * showModal - 질문 게시글 작성/수정할 수 있는 모달을 표시
      */
     const [showModal, setShowModal] = React.useState(false);
-
     /**
      * 하위 컴포넌트로 넘겨줄 상태 변수들
      */
@@ -204,15 +203,12 @@ function Board(props) {
         showCurrentItem(id);
     }
 
-    const changeHandler = (event) => {
-        setKeyword(event.target.value);
-    }
-
     function searchList(keyword) {
         const result = Array.from(list).filter((item) => {
-            return item.data.title.includes(keyword) || item.data.contents.includes(keyword) || item.data.code.includes(keyword);
+            let isCorrect = item.data.title.includes(keyword) || item.data.contents.includes(keyword) || item.data.code.includes(keyword);
+            isCorrect = selectedTag === 'All' ? isCorrect : isCorrect && item.data.tags.includes(selectedTag);
+            return isCorrect;
         })
-
         return result;
     }
 
@@ -224,9 +220,14 @@ function Board(props) {
             }
             setMode('search');
             setCurrentId(-1);
+            keywordRef.current.value = '';
         } else {
             return null;
         }
+    }
+
+    const changeHandler = (event) => {
+        setKeyword(event.target.value);
     }
 
     /**
@@ -285,7 +286,7 @@ function Board(props) {
                  */
             }
             <div className="board-options">
-                <input type="search" name="keyword" placeholder="🔍 검색어를 입력하세요." onChange={changeHandler} onKeyDown={searchHandler} />
+                <input type="search" ref={keywordRef} name="keyword" placeholder="🔍 검색어를 입력하세요." onChange={changeHandler} onKeyDown={searchHandler} />
                 <button className="board-button" id="search" onClick={searchHandler}>검색</button>
                 <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
             </div>
@@ -739,6 +740,12 @@ function Modal(props) {
     const [password, setPassword] = React.useState(currentItem ? currentItem.data.password : '');
     const [tags, setTags] = React.useState(currentItem ? Array.from(currentItem.data.tags).join() : '');
 
+    const titleRef = React.useRef(null);
+
+    useEffect(() => {
+        titleRef.current.focus();
+    }, [])
+
     function initStates() {
         setTitle('');
         setContents('');
@@ -818,6 +825,9 @@ function Modal(props) {
         states.setShowModal(false);
     }
 
+    /**
+     * 모달창이 활성화되어있을 때 스크롤을 고정시키기
+     */
     const preventScroll = () => {
         const currentScrollY = window.scrollY;
         document.body.style.position = 'fixed';
@@ -846,17 +856,18 @@ function Modal(props) {
     return (
         <div className="modal-container">
             <dialog open className="modal">
-                <input type="text" title="title" value={title}
+                <span className="modal-title">{!currentItem ? '작성하기' : '수정하기'}</span>
+                <input type="text" title="title" value={title} ref={titleRef}
                     onChange={changeHandler} placeholder="제목" />
+                {!currentItem && (
+                    <input type="password" title="password" value={password}
+                        onChange={changeHandler} placeholder="비밀번호를 입력하세요." />
+                )}
                 <textarea className="post-contents post-code" title="code" value={code}
                     onChange={changeHandler} placeholder="소스코드"></textarea>
                 <textarea className="post-contents" title="contents" value={contents}
                     onChange={changeHandler} placeholder="게시글 내용"></textarea>
                 {/* 게시글 작성시만 비밀번호 입력 가능 */}
-                {!currentItem && (
-                    <input type="password" title="password" value={password}
-                        onChange={changeHandler} placeholder="비밀번호를 입력하세요." />
-                )}
                 <input type="text" title="tags" value={tags}
                     onChange={changeHandler} placeholder="태그: 콤마(,)로 구분하여 작성하세요." />
                 <div className="modal-buttons">

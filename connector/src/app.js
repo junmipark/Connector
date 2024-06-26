@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import QnaStorage from "./model/QnaStorage";
 
 import style from "./css/app.css";
@@ -517,6 +517,11 @@ function PostItem(props) {
                     </div>
                     {item.data.code.length > 0 && <pre className="post-contents post-code">{item.data.code}</pre>}
                     <pre className="post-contents">{item.data.contents}</pre>
+                    <div>
+                        {item.data.imageFile &&
+                            <img src={item.data.imageFile} alt="게시물 이미지" style={{ maxWidth: '300px', maxHeight: '300px' }} />
+                        }
+                    </div>
                     <div className="post-tags">
                         {
                             Array.from(item.data.tags).map((tag) => {
@@ -737,13 +742,18 @@ function Modal(props) {
     const [code, setCode] = React.useState(currentItem ? currentItem.data.code : '');
     const [contents, setContents] = React.useState(currentItem ? currentItem.data.contents : '');
     const [password, setPassword] = React.useState(currentItem ? currentItem.data.password : '');
+    const [selectedFile, setSelectedFile] = React.useState(null);
+    const [previewFile, setPreviewFile] = React.useState(null);
     const [tags, setTags] = React.useState(currentItem ? Array.from(currentItem.data.tags).join() : '');
+
+    const [popupWindow, setPopupWindow] = useState(null);
 
     function initStates() {
         setTitle('');
         setContents('');
         setCode('');
         setPassword('');
+        setSelectedFile(null);
         setTags('');
     }
 
@@ -780,18 +790,69 @@ function Modal(props) {
     }
 
     /**
+     * 이미지 파일 선택
+     */
+    const fileChangeHandler = (e) => {
+        const file = e.target.files[0];
+
+        if (file && file.type === 'image/jpeg') {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setPreviewFile(e.target.result);
+            };
+            setSelectedFile(file);
+            reader.readAsDataURL(file);
+
+        } else {
+            window.alert('JPG 형식의 이미지 파일을 선택해주세요.');
+            setSelectedFile(null);
+            setPreviewFile(null);
+        }
+    };
+
+    /**
+     * 선택된 파일을 Base64로 인코딩
+     */
+    const encodeImageToBase64 = (imageFile) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(imageFile);
+            reader.onloadend = () => {
+                resolve(reader.result);
+            };
+            reader.onerror = reject;
+        });
+    };
+
+    /**
+     * 이미지 업로드 미리보기 클릭시 팝업창 열기
+     */
+    const openImagePopup = () => {
+        const newPopupWindow = window.open('', '_blank', 'height=600,width=600');
+        setPopupWindow(newPopupWindow);
+
+        if (newPopupWindow) {
+            newPopupWindow.document.write(`<html><head><title>Image Preview</title></head><body style="margin: 0; display: flex; justify-content: center; align-items: center;"><img src="${previewFile}" style="max-width: 100%; max-height: 100%;"></body></html>`);
+        } else {
+            alert('팝업 창이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.');
+        }
+    };
+
+    /**
      * [confirmHandler]
      * 게시글 작성 완료 버튼을 눌렀을 때,
      * 새로운 데이터 값을 qnaStorage에 저장(write)하거나
      * 기존의 데이터 값을 변경(update)할 때 데이터를 처리하는 것을 담당
      */
-    const confirmHandler = () => {
+    const confirmHandler = async () => {
         const newTags = createTags(tags);
+        const imageFile = await encodeImageToBase64(selectedFile);
         const newItem = {
             title,
             code,
             contents,
             password,
+            imageFile,
             'tags': newTags
         }
 
@@ -826,6 +887,8 @@ function Modal(props) {
                 onChange={changeHandler} placeholder="소스코드"></textarea>
             <textarea className="post-contents" title="contents" value={contents}
                 onChange={changeHandler} placeholder="게시글 내용"></textarea>
+            <input id="fileInput" type="file" accept=".jpg" onChange={fileChangeHandler} />
+            {previewFile && <img src={previewFile} alt="미리보기" style={{ maxWidth: '100px', maxHeight: '100px' }} onClick={openImagePopup} />}
             {/* 게시글 작성시만 비밀번호 입력 가능 */}
             {!currentItem && (
                 <input type="password" title="password" value={password}

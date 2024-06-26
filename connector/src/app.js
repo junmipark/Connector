@@ -72,8 +72,7 @@ function Board(props) {
     const [currentId, setCurrentId] = React.useState(false);
     const [trendList, setTrendList] = React.useState([]);
 
-    //태그 선택 상태 추가, 기본값 All
-    // const [selectedTag, setSelectedTag] = React.useState('All');
+    //태그 선택 상태 추가
     const [selectedTags, setSelectedTags] = React.useState([]);
 
     const [keyword, setKeyword] = React.useState('');
@@ -180,24 +179,30 @@ function Board(props) {
 
     function selectedTagList() {
         if(selectedTags.length === 0) {
+            setMode('default');
             return list;
         }
         else {
-            return list.filter((tag) => {
-                return selectedTags.every(item.data.tags.includes(tag))
+            return list.filter((item) => {
+                return selectedTags.every(tag=>item.data.tags.includes(tag))
             });
         }
     }
 
-    //선택된 태그 변경 핸들러
+    //태그 클릭 핸들러
     const selectedTagHandler = (tag) => {
-        setSelectedTags(tag);
-        if (tag === 'All') {
-            setMode('default');
-        } else {
-            setMode('tagged');
-        }
-    }
+        setSelectedTags(old => {
+            if (old.includes(tag)) {
+                // 태그가 이미 선택되어 있으면 제거
+                return old.filter(t => t !== tag);
+            }
+            else {
+                // 태그가 선택되어 있지 않으면 추가
+                return [...old, tag];
+            }
+        });
+        setMode('tagged');
+    };
 
     const scrollCallBack = (id) => {
         const target = document.getElementById(id);
@@ -218,7 +223,7 @@ function Board(props) {
     function searchList(keyword) {
         const result = Array.from(list).filter((item) => {
             let isCorrect = item.data.title.includes(keyword) || item.data.contents.includes(keyword) || item.data.code.includes(keyword);
-            isCorrect = selectedTag === 'All' ? isCorrect : isCorrect && item.data.tags.includes(selectedTag);
+            isCorrect = selectedTags === 'All' ? isCorrect : isCorrect && item.data.tags.includes(selectedTags);
             return isCorrect;
         })
         return result;
@@ -284,10 +289,18 @@ function Board(props) {
                  */
             }
             <ul className="board-tags">
-                <li><button className={`board-tag${'All' === selectedTag ? " selected" : ""}`} onClick={() => { selectedTagHandler('All') }}>All</button></li>
+                <li>
+                    <button className={`board-tag${selectedTags.length === 0 ? " selected" : ""}`}
+                    onClick={() => {
+                        setSelectedTags([]);
+                        setMode('default');
+                    }}>
+                        All
+                    </button>
+                </li>
                 {
                     Array.from(tags).map((tag) => {
-                        return <li key={tag}><button className={`board-tag${tag === selectedTag ? " selected" : ""}`} onClick={() => { selectedTagHandler(tag) }}>{tag}</button></li>
+                        return <li key={tag}><button className={`board-tag${selectedTags.includes(tag) ? " selected" : ""}`} onClick={() => { selectedTagHandler(tag) }}>{tag}</button></li>
                     })
                 }
             </ul>

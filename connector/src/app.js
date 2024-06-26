@@ -832,7 +832,16 @@ function Modal(props) {
         setPopupWindow(newPopupWindow);
 
         if (newPopupWindow) {
-            newPopupWindow.document.write(`<html><head><title>Image Preview</title></head><body style="margin: 0; display: flex; justify-content: center; align-items: center;"><img src="${previewFile}" style="max-width: 100%; max-height: 100%;"></body></html>`);
+            newPopupWindow.document.write(
+                `<html>
+                    <head>
+                        <title>Image Preview</title>
+                    </head>
+                    <body style="margin: 0; display: flex; justify-content: center; align-items: center;">
+                        <img src="${previewFile}" style="max-width: 100%; max-height: 100%;">
+                    </body>
+                    </html>`
+                );
         } else {
             alert('팝업 창이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.');
         }

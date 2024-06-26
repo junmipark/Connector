@@ -70,6 +70,7 @@ function Board(props) {
     const [count, setCount] = React.useState(localStorage.qnaCount);
     const [showItem, setShowItem] = React.useState(false);
     const [currentId, setCurrentId] = React.useState(false);
+    const [trendList, setTrendList] = React.useState([]);
 
     //태그 선택 상태 추가, 기본값 All
     const [selectedTag, setSelectedTag] = React.useState('All');
@@ -193,6 +194,11 @@ function Board(props) {
         }
     }
 
+    const scrollCallBack = (id) => {
+        const target = document.getElementById(id);
+        target.scrollIntoView({ behavior: "smooth" });
+    }
+
     /**
      * 핫 토픽을 클릭했을 때 이에 해당하는 게시글로 이동하도록 구현
      */
@@ -201,6 +207,7 @@ function Board(props) {
             setMode('default');
         }
         showCurrentItem(id);
+        scrollCallBack(id);
     }
 
     function searchList(keyword) {
@@ -214,7 +221,8 @@ function Board(props) {
 
     const searchHandler = (event) => {
         if (event.type === 'click' || (event.type === 'keydown' && event.key === 'Enter')) {
-            if (keyword === '') {
+            setKeyword(keywordRef.current.value);
+            if (keywordRef.current.value === '') {
                 window.alert('검색어를 입력하세요!');
                 return null;
             }
@@ -224,10 +232,6 @@ function Board(props) {
         } else {
             return null;
         }
-    }
-
-    const changeHandler = (event) => {
-        setKeyword(event.target.value);
     }
 
     /**
@@ -244,6 +248,9 @@ function Board(props) {
         }
     }
 
+    React.useEffect(() => {
+        setTrendList(getHotTopics());
+    }, []);
     /**
      * 화면이 렌더링될 때마다 로컬 스토리지에 현재까지의 데이터를 저장
      */
@@ -286,7 +293,7 @@ function Board(props) {
                  */
             }
             <div className="board-options">
-                <input type="search" ref={keywordRef} name="keyword" placeholder="🔍 검색어를 입력하세요." onChange={changeHandler} onKeyDown={searchHandler} />
+                <input type="search" ref={keywordRef} name="keyword" placeholder="🔍 검색어를 입력하세요." onKeyDown={searchHandler} />
                 <button className="board-button" id="search" onClick={searchHandler}>검색</button>
                 <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
             </div>
@@ -305,37 +312,43 @@ function Board(props) {
                         </thead>
                         <tbody>
                             {
-                                /**
-                                 * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
-                                 */
-                                mode === 'default' && list.map((item, index) => {
-                                    return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
-                                })
-                            }{
-                                /**
-                                 * 검색 모드인 경우 검색 결과를 출력
-                                 */
-                                mode === 'search' && <>
-                                    <td className="search-text">'{keyword}'에 대한 검색 결과입니다.</td>
+                                /**기본 --> 모든 게시글 보여주기 */
+                                mode === 'default' && <>
                                     {
-                                        searchList(keyword).map((item, index) => {
-                                            return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
+                                        Array.from(list).reverse().map((item, index) => {
+                                            return <Post key={index} id={item.id} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                         })
                                     }
                                 </>
                             }
                             {
-                                mode === 'tagged' && <>
+                                /**검색 모드 --> 검색 결과에 해당하는 게시글 보여주기 */
+                                mode === 'search' && <>
+                                    <td className="search-text">'{keyword}'에 대한 검색 결과입니다.</td>
                                     {
-
-                                        /**
-                                         * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
-                                         */
-                                        selectedTagList().map((item, index) => {
-                                            return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
+                                        Array.from(searchList(keyword)).reverse().map((item, index) => {
+                                            return <Post key={index} id={item.id} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                         })
                                     }
                                 </>
+                            }
+                            {
+                                /**태그 모드 --> 해당하는 태그를 포함하는 게시글 보여주기 */
+                                mode === 'tagged' && <>
+                                    {
+                                        Array.from(selectedTagList()).reverse().map((item, index) => {
+                                            return <Post key={index} id={item.id} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
+                                        })
+                                    }
+                                </>
+                            }
+                            {
+                                mode === 'default' && list.length === 0 &&
+                                <tr>
+                                    <td>
+                                        <span className="text-not-found">게시글이 존재하지 않습니다.</span>
+                                    </td>
+                                </tr>
                             }
                         </tbody>
                     </table>
@@ -349,7 +362,7 @@ function Board(props) {
                         </thead>
                         <tbody>
                             {
-                                getHotTopics().map((item) => {
+                                trendList.map((item) => {
                                     return (
                                         <tr className="post hot-topic" key={item.id} onClick={() => { clickHandler(item.id) }}>
                                             <td className="post-item hot-topic">
@@ -362,6 +375,14 @@ function Board(props) {
                                         </tr>
                                     )
                                 })
+                            }
+                            {
+                                mode === 'default' && trendList.length === 0 &&
+                                <tr>
+                                    <td>
+                                        <span className="text-not-found">현재 활성화된 게시글이 없어요!</span>
+                                    </td>
+                                </tr>
                             }
                         </tbody>
                     </table>
@@ -391,7 +412,7 @@ function Post(props) {
     return (
         <>
             <tr className={`post${item.id === states.id ? ' clicked' : ''}`} onClick={() => { readHandler(item.id); }}>
-                <td className="post-item">
+                <td className="post-item" id={props.id}>
                     <div>
                         <p>{item.data.title}</p>
                         <p className="post-text">{new Date(item.createdDate).toLocaleString('ko-KR')}</p>

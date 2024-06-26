@@ -302,8 +302,9 @@
 }
 
 .modal {
-    display: grid;
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     width: 600px;
     padding: 20px;
     position: fixed;
@@ -318,9 +319,15 @@
 .modal textarea {
     padding: 10px;
     font-size: medium;
-    padding: 10px;
+    border: 1px solid gainsboro;
 }
 
 .modal-buttons {
     justify-self: end;
+}
+
+.modal-text {
+    font-size: large;
+    font-weight: bold;
+    margin-bottom: 10px;
 }

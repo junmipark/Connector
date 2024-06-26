@@ -673,6 +673,7 @@ function Modal(props) {
 
     return (
         <dialog open className="modal">
+            <span className="modal-text">{currentItem ? '질문을 등록하세요.' : '등록된 글을 수정하세요.'}</span>
             <input type="text" title="title" value={title}
                 onChange={changeHandler} placeholder="제목" />
             <textarea className="post-contents post-code" title="code" value={code}

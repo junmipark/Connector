@@ -1,5 +1,5 @@
 import React from "react";
-import QnaStorage from "./model/QnaStorage";
+import QnaStorage from "./model/QnaStorage_ksh";
 
 import style from "./css/app.css";
 
@@ -240,8 +240,8 @@ function PostItem(props) {
     }
 
     /**
-     * 질문 게시글 생성시 입력한 비밀번호와 입력한 비밀번호 비교
-     * 값이 일치하면 기존과 같이 수정가능
+     * prompt를 통해 입력받은 값과 게시글의 비밀번호 값을 비교
+     * 비교 값이 참일 경우 수정 가능
      */
     const editPasswordCheckHandler = (index) => {
         if (!states.showModal) {
@@ -266,6 +266,10 @@ function PostItem(props) {
         }
     }
 
+    /**
+     * prompt를 통해 입력받은 값과 게시글의 비밀번호 값을 비교
+     * 비교 값이 참일 경우 삭제 가능
+     */
     const deletePasswordCheckHandler = (index) => {
         if (!states.showModal) {
             const bbsPassword = prompt('비밀번호를 입력하세요.');
@@ -346,18 +350,28 @@ function Reply(props) {
     /**
      * contents --> 답변 작성을 위해 사용하는 상태 변수
      * changeHandler --> textarea 값이 바뀔 때마다 contents 값을 변경하는 변수
+     * password 추가
      */
     const [contents, setContents] = React.useState('');
+    const [password, setPassword] = React.useState('');
+
     const changeHandler = (event) => {
-        setContents(event.target.value);
+        switch (event.target.title) {
+            case 'contents':
+                setContents(event.target.value);
+                break;
+            case 'password':
+                setPassword(event.target.value.trim());
+                break;
+        }
     }
 
     const writeHandler = (event) => {
         if (contents.trim() === '') {
-            window.alert('답변을 정확히 입력하세요!');
+            window.alert('답변과 비밀번호를 정확히 입력하세요!');
             return null;
         }
-        let result = qnaStorage.createAnswer({ contents });
+        let result = qnaStorage.createAnswer({ contents, password });
         switch (result) {
             case false:
                 window.alert('답변이 등록되지 않았습니다.');
@@ -366,6 +380,7 @@ function Reply(props) {
                 window.alert('답변이 등록되었습니다.');
         }
         setContents('');
+        setPassword('');
         setInitState();
     }
 
@@ -373,6 +388,8 @@ function Reply(props) {
         <div className="post-details">
             <div className="answer-textarea">
                 <textarea title="contents" placeholder="답변을 작성하세요." value={contents} onChange={changeHandler}></textarea>
+                <input type="password" title="password" value={password}
+                    onChange={changeHandler} placeholder="비밀번호를 입력하세요." />
                 <button className="board-button" onClick={writeHandler}>등록하기</button>
             </div>
             {
@@ -390,6 +407,7 @@ function ReplyItem(props) {
 
     const [contents, setContents] = React.useState(item.data.contents);
     const [showTextarea, setShowTextarea] = React.useState(false);
+    const [answerPassword, setAnswerPassword] = React.useState(item.data.password);
 
     function isCurrentItem() {
         return showTextarea && index === states.currentReply;
@@ -399,27 +417,72 @@ function ReplyItem(props) {
         setContents(event.target.value);
     }
 
+    /**
+     * prompt를 통해 입력받은 값과 답변 게시글의 비밀번호 비교 값을 반환
+     */
+    const passwordCheckHandler = (index) => {
+        if (!states.showModal) {
+            // 사용자에게 비밀번호 입력 요청
+            const checkPassword = prompt('비밀번호를 입력하세요.');
+
+            // 사용자가 취소 버튼을 클릭시
+            if (checkPassword === null) {
+                return;
+            }
+
+            // 현재 댓글의 데이터 반환
+            qnaStorage.setCurrentIndex(index);
+            const currentItem = qnaStorage.getItem();
+
+            // 답변 게시글 비밀번호 반환
+            const selectedAnswer = currentItem.answerList[index];
+            const password = selectedAnswer.data.password;
+
+            if (checkPassword === password) {
+                return true;
+            } else {
+                window.alert('비밀번호가 다릅니다!');
+                return false;
+            }
+        } else {
+            window.alert('답변 작성 중에는 다른 작업을 할 수 없습니다. 작성을 완료하거나 취소한 후 다시 시도하세요.');
+            return null;
+        }
+    }
+
+    /**
+     * 비밀번호 값을 비교하여 얻은 값을 통해 실행 여부
+     */
     const clickHandler = (index) => {
-        states.setCurrentReply(index);
-        setShowTextarea(true);
+        const confirmed = passwordCheckHandler(index);
+        if (confirmed) {
+            states.setCurrentReply(index);
+            setShowTextarea(true);
+        }
     }
 
     const updateHandler = (index) => {
-        const result = qnaStorage.updateAnswer({ contents }, index);
+        const result = qnaStorage.updateAnswer({ contents, password: answerPassword }, index);
         const resultText = result ? '답변이 수정되었습니다.' : '답변이 수정되지 않았습니다.';
         window.alert(resultText);
         setShowTextarea(false);
         setInitState();
     }
 
+    /**
+     * 비밀번호 값을 비교하여 얻은 값을 통해 실행 여부
+     */
     const deleteHandler = (index) => {
-        if (window.confirm('게시글을 삭제하시겠습니까?')) {
-            const result = qnaStorage.deleteAnswer(index);
-            const resultText = result ? '답변이 삭제되었습니다.' : '답변이 삭제되지 않았습니다.';
-            window.alert(resultText);
-            setInitState();
-        } else {
-            qnaStorage.setIndexDefault();
+        const confirmed = passwordCheckHandler(index);
+        if (confirmed) {
+            if (window.confirm('게시글을 삭제하시겠습니까?')) {
+                const result = qnaStorage.deleteAnswer(index);
+                const resultText = result ? '답변이 삭제되었습니다.' : '답변이 삭제되지 않았습니다.';
+                window.alert(resultText);
+                setInitState();
+            } else {
+                qnaStorage.setIndexDefault();
+            }
         }
     }
 

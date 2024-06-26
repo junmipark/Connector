@@ -1,6 +1,6 @@
 import ItemStorage from "./ItemStorage";
 import QuestionItem from "./QuestionItem";
-import AnswerItem from "./AnswerItem";
+import AnswerItem from "./AnswerItem_ksh";
 import Item from "./Item";
 
 class QnaStorage extends ItemStorage {
@@ -55,13 +55,13 @@ class QnaStorage extends ItemStorage {
      * 답변 게시글 CRUD
      */
 
-    createAnswer(data) {
+    createAnswer(data, password) {
         try {
             if (this.currentIndex !== -1) {
                 const currentQuestion = this.list[this.currentIndex];
                 const questionId = currentQuestion.id;
                 let newAnswer = new AnswerItem(data, questionId);
-                newAnswer = { ...newAnswer, id: currentQuestion.answerCount++ }
+                newAnswer = { ...newAnswer, id: currentQuestion.answerCount++, password: password }
                 currentQuestion.answerList.push(newAnswer);
                 this.list[this.currentIndex] = currentQuestion;
             }

@@ -68,6 +68,7 @@
 }
 
 .board-tag.selected {
+    color: white;
     background-color: darkblue;
 }
 
@@ -286,11 +287,17 @@
     display: grid;
     gap: 10px;
     width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    border: none;
 }
 
 .answer-textarea>textarea,
-.answer-area>textarea {
+.answer-area>textarea,
+.answer-textarea>input[type="password"] {
+    padding: 10px;
     font-size: medium;
+    border: 1px solid gainsboro;
 }
 
 .answer-textarea>button {

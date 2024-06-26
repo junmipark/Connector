@@ -13,7 +13,7 @@ function App(props) {
      * lastIndex - 마지막으로 확인했던 질답 게시글의 인덱스
      * --> 재렌더링 시에 마지막으로 수정/삭제했던 게시글을 펼쳐주는 역할
      */
-    let qnaList, qnaTagList;
+    let qnaList, qnaTagList, qnaCount;
     const lastIndex = window.localStorage.getItem('lastIndex');
 
     /**
@@ -38,11 +38,16 @@ function App(props) {
      * localStorage에 qnaList가 존재하는지 확인
      */
     qnaList = window.localStorage.getItem('qnaList');
+
     qnaList = qnaList ? JSON.parse(qnaList) : [];
     qnaTagList = createQnaTagList(qnaList);
 
+    qnaCount = window.localStorage.getItem('qnaCount');
+    qnaCount = qnaCount ? Number(qnaCount) : 0;
+
     const localStorage = {
         qnaList,
+        qnaCount,
         qnaTagList,
         createQnaTagList,
         lastIndex
@@ -62,13 +67,15 @@ function Board(props) {
     const localStorage = props.localStorage;
     const [list, setList] = React.useState(localStorage.qnaList);
     const [tags, setTags] = React.useState(localStorage.qnaTagList);
-    const [isNew, setIsNew] = React.useState(0);
+    const [count, setCount] = React.useState(localStorage.qnaCount);
+    const [showItem, setShowItem] = React.useState(false);
     const [currentIndex, setCurrentIndex] = React.useState(false);
 
     /**
      * qnaStorage에 localStorage에 저장되어 있는 데이터를 불러와서 초기화!
      */
     qnaStorage.setList(list);
+    qnaStorage.setCount(count);
     qnaStorage.setTags(tags);
 
     /**
@@ -84,14 +91,16 @@ function Board(props) {
         currentIndex,
         setCurrentIndex,
         showModal,
-        setShowModal
+        setShowModal,
+        showItem,
+        setShowItem
     }
 
     function setInitState() {
         setShowModal(false);
         setList(qnaStorage.list);
         setTags(localStorage.createQnaTagList(qnaStorage.list));
-        setIsNew(isNew + 1);
+        setCount(qnaStorage);
     }
 
     // 각각 경과시간과 경과일을 반환하는 함수
@@ -157,6 +166,18 @@ function Board(props) {
     }
 
     /**
+     * 핫 토픽을 클릭했을 때 이에 해당하는 게시글로 이동하도록 구현
+     */
+    const clickHandler = (id) => {
+        const index = qnaStorage.list.findIndex((item) => { return item.id === id });
+        console.log(index);
+
+        qnaStorage.setCurrentIndex(index);
+        setCurrentIndex(index);
+        setShowItem(true);
+    }
+
+    /**
      * 글 작성 버튼을 클릭하였을 때 모달이 표시되도록 구현
      */
     const writeHandler = () => {
@@ -175,9 +196,9 @@ function Board(props) {
      */
     React.useEffect(() => {
         window.localStorage.setItem('qnaList', JSON.stringify(list));
-        window.localStorage.setItem('qnaTagList', JSON.stringify(tags));
+        window.localStorage.setItem('qnaCount', count);
         window.localStorage.setItem('lastIndex', currentIndex);
-    }, [isNew, list, tags, currentIndex]);
+    }, [count, list, tags, currentIndex]);
 
     return (
         <div className="board">
@@ -240,10 +261,17 @@ function Board(props) {
                         </thead>
                         <tbody>
                             {
+                                /**
+                                 * getHotTopics()를 통해 얻은 배열은 
+                                 * 특정 조건에 따라 배열된 것으로 
+                                 * 원래 answerList의 배열과 다름
+                                 * questionId를 활용하여 클릭 시에 게시글을 보여주도록 구현
+                                 */
                                 getHotTopics().map((item, index) => {
                                     return (
-                                        <tr className="post hot-topic" key={index}>
+                                        <tr className="post hot-topic" key={index} onClick={() => { clickHandler(item.id) }}>
                                             <td className="post-item hot-topic">
+                                                <input type="hidden" name="itemId" />
                                                 <p>{item.data.title}</p>
                                                 <p className="post-text">{item.data.contents}</p>
                                                 <p className="post-text">최종 답변: {getDateString(getLastestItem(item.answerList).modifiedDate)}</p>
@@ -268,7 +296,6 @@ function Post(props) {
     * 게시글을 선택했을 때 해당 게시글의 상세 내용을 보여주도록 하는 상태 변수들
     * showItem - 게시글의 상세 내용을 표시할 것인지 아닌지를 불린 값으로 저장하는 변수
     */
-    const [showItem, setShowItem] = React.useState(false);
     /**
      * 질문 게시글을 처리하는 핸들러 함수
      */
@@ -276,11 +303,11 @@ function Post(props) {
         if (index !== states.currentIndex) {
             qnaStorage.setCurrentIndex(index);
             states.setCurrentIndex(index);
-            setShowItem(true);
+            states.setShowItem(true);
         } else {
             qnaStorage.setCurrentIndex(-1);
             states.setCurrentIndex(-1);
-            setShowItem(false);
+            states.setShowItem(false);
         }
     }
     return (
@@ -305,7 +332,7 @@ function Post(props) {
                 </td >
             </tr >
             {
-                showItem && states.currentIndex === props.index && <PostItem item={item} index={index} states={states} setInitState={setInitState} />
+                states.showItem && states.currentIndex === props.index && <PostItem item={item} index={index} states={states} setInitState={setInitState} />
             }
         </>
     )
@@ -585,6 +612,7 @@ function Modal(props) {
         }
 
         window.alert(resultText);
+        console.log(qnaStorage.count)
         setInitState();
     }
 

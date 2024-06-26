@@ -14,7 +14,8 @@ class QnaStorage extends ItemStorage {
      */
     createQuestion(data) {
         let question = new QuestionItem(data);
-        question = { ...question, 'id': this.count++ }
+        this.count += 1;
+        question = { ...question, 'id': this.count }
         try {
             this.list.push(question);
             this.setTags(data.tags);

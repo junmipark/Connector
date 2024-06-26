@@ -13,6 +13,10 @@ class ItemStorage {
         }
     }
 
+    setCount(count) {
+        this.count = count;
+    }
+
     setIndexDefault() {
         this.currentIndex = -1;
     }

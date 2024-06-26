@@ -31,6 +31,7 @@
     display: flex;
     gap: 20px;
     flex-direction: column;
+    align-items: center;
     width: 1200px;
     min-height: 100vh;
     background-color: white;
@@ -48,6 +49,7 @@
 
 .board-tags {
     display: flex;
+    width: 100%;
     list-style-type: none;
 }
 
@@ -73,6 +75,10 @@
     게시글 쓰기, 게시글 목록보기, 게시글 상세보기를 제공하는 영역
 */
 
+.board-options {
+    width: 100%;
+}
+
 .board-area {
     display: flex;
     align-items: start;
@@ -86,6 +92,14 @@
 
 .board-area .qna {
     width: 760px;
+}
+
+.search-text {
+    text-align: center;
+}
+
+.board-area .trend {
+    width: 360px;
 }
 
 .board-button {

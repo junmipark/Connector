@@ -172,13 +172,18 @@ function Board(props) {
      * 핫 토픽을 클릭했을 때 이에 해당하는 게시글로 이동하도록 구현
      */
     const clickHandler = (id) => {
+        if (mode !== 'default') {
+            setMode('default');
+        }
         qnaStorage.setCurrentId(id);
         setCurrentId(id);
         setShowItem(true);
     }
 
     const changeHandler = (event) => {
-        setMode('default');
+        if (mode !== 'default') {
+            setMode('default');
+        }
         setKeyword(event.target.value);
     }
 
@@ -204,7 +209,7 @@ function Board(props) {
      */
     const writeHandler = () => {
         if (!showModal) {
-            qnaStorage.setIndexDefault();
+            qnaStorage.setIdDefault();
             setCurrentId(-1);
             setShowModal(true);
         } else {
@@ -248,7 +253,13 @@ function Board(props) {
                     })
                 }
             </ul>
-            <div>
+            {
+                /**
+                 * 게시판 메뉴(옵션) 영역
+                 * 검색창과 글쓰기 기능을 제공 !
+                 */
+            }
+            <div className="board-options">
                 <input type="text" name="keyword" onChange={changeHandler} onKeyDown={searchHandler} />
                 <button className="board-button" id="search" onClick={searchHandler}>검색</button>
                 <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
@@ -272,12 +283,17 @@ function Board(props) {
                                  * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
                                  */
                                 mode === 'default' && qnaStorage.list.map((item, index) => {
-                                    return <Post key={index} index={index} item={item} states={states} setInitState={setInitState} />
+                                    return <Post key={index} item={item} states={states} setInitState={setInitState} />
                                 })
                             }{
-                                mode === 'search' && searchList(keyword).map((item, index) => {
-                                    return <Post key={index} index={index} item={item} states={states} setInitState={setInitState} />
-                                })
+                                mode === 'search' && <>
+                                    <td className="search-text">'{keyword}'에 대한 검색 결과입니다.</td>
+                                    {
+                                        searchList(keyword).map((item, index) => {
+                                            return <Post key={index} item={item} states={states} setInitState={setInitState} />
+                                        })
+                                    }
+                                </>
                             }
                         </tbody>
                     </table>
@@ -401,7 +417,7 @@ function PostItem(props) {
             result = qnaStorage.deleteQuestion() ? '게시글이 삭제되었습니다.' : '게시글이 삭제되지 않았습니다.';
             window.window.alert(result);
         } else {
-            qnaStorage.setIndexDefault();
+            qnaStorage.setIdDefault();
         }
         setInitState();
     }
@@ -523,7 +539,7 @@ function ReplyItem(props) {
             window.alert(resultText);
             setInitState();
         } else {
-            qnaStorage.setIndexDefault();
+            qnaStorage.setIdDefault();
         }
     }
 
@@ -568,7 +584,6 @@ function Modal(props) {
     const [states, setInitState] = [props.states, props.setInitState];
     /**
      * [ currentItem ]
-     * 현재 currentIndex가 설정된 경우, qnaStorage가 가리키고 있는 list의 배열 값
      * currentItem이 null인 건 currentIndex가 -1, 현재 가리키고 있는 값이 없음을 의미 
      * 즉 게시글을 새로 작성하는 것을 뜻함
      */
@@ -651,7 +666,7 @@ function Modal(props) {
 
     const cancleHandler = () => {
         initStates();
-        qnaStorage.setIndexDefault();
+        qnaStorage.setIdDefault();
         states.setShowModal(false);
     }
 

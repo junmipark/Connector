@@ -124,6 +124,10 @@ class QnaStorage extends ItemStorage {
         this.currentId = id;
     }
 
+    setIdDefault() {
+        this.currentId = -1;
+    }
+
     /**
      * 상단에 표시되는 태그들
      */

@@ -11,9 +11,10 @@ import Item from "./Item";
  */
 
 class AnswerItem extends Item {
-    constructor(data, questionId) {
+    constructor(data, questionId, password) {
         super(data);
         this.questionId = questionId;
+        this.password = password;
     }
 }
 

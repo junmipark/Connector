@@ -223,7 +223,7 @@ function Board(props) {
     function searchList(keyword) {
         const result = Array.from(list).filter((item) => {
             let isCorrect = item.data.title.includes(keyword) || item.data.contents.includes(keyword) || item.data.code.includes(keyword);
-            isCorrect = selectedTags === 'All' ? isCorrect : isCorrect && item.data.tags.includes(selectedTags);
+            isCorrect = selectedTags.length === 0 ? isCorrect : isCorrect && selectedTags.every(tag => item.data.tags.includes(tag));
             return isCorrect;
         })
         return result;

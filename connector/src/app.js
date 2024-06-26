@@ -214,7 +214,8 @@ function Board(props) {
 
     const searchHandler = (event) => {
         if (event.type === 'click' || (event.type === 'keydown' && event.key === 'Enter')) {
-            if (keyword === '') {
+            setKeyword(keywordRef.current.value);
+            if (keywordRef.current.value === '') {
                 window.alert('검색어를 입력하세요!');
                 return null;
             }
@@ -224,10 +225,6 @@ function Board(props) {
         } else {
             return null;
         }
-    }
-
-    const changeHandler = (event) => {
-        setKeyword(event.target.value);
     }
 
     /**
@@ -286,7 +283,7 @@ function Board(props) {
                  */
             }
             <div className="board-options">
-                <input type="search" ref={keywordRef} name="keyword" placeholder="🔍 검색어를 입력하세요." onChange={changeHandler} onKeyDown={searchHandler} />
+                <input type="search" ref={keywordRef} name="keyword" placeholder="🔍 검색어를 입력하세요." onKeyDown={searchHandler} />
                 <button className="board-button" id="search" onClick={searchHandler}>검색</button>
                 <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
             </div>
@@ -308,7 +305,7 @@ function Board(props) {
                                 /**
                                  * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
                                  */
-                                mode === 'default' && list.map((item, index) => {
+                                mode === 'default' && Array.from(list).reverse().map((item, index) => {
                                     return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                 })
                             }{
@@ -318,7 +315,7 @@ function Board(props) {
                                 mode === 'search' && <>
                                     <td className="search-text">'{keyword}'에 대한 검색 결과입니다.</td>
                                     {
-                                        searchList(keyword).map((item, index) => {
+                                        Array.from(searchList(keyword)).reverse().map((item, index) => {
                                             return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                         })
                                     }
@@ -331,7 +328,7 @@ function Board(props) {
                                         /**
                                          * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
                                          */
-                                        selectedTagList().map((item, index) => {
+                                        Array.from(selectedTagList()).reverse().map((item, index) => {
                                             return <Post key={index} item={item} states={states} setInitState={setInitState} showCurrentItem={showCurrentItem} />
                                         })
                                     }

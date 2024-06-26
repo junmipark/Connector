@@ -61,18 +61,35 @@ function Board(props) {
     const [tags, setTags] = React.useState(localStorage.qnaTagList);
     const [isNew, setIsNew] = React.useState(0);
     const [currentIndex, setCurrentIndex] = React.useState(false);
+    
+    //태그 선택 상태 추가, 기본값 All
+    const [selectedTag, setSelectedTag] = React.useState(['All']);
 
+    //선택된 태그의 게시글 목록
+    const selectedTagList = () => {
+        return selectedTag === 'All' ? list : list.filter((item) => {
+            item.data.tags.includes(selectedTag)
+            console.log(selectedTag, item.data.tags);
+        });
+    }
+
+    //선택된 태그 변경 핸들러
+    const selectedTagHandler = (tag) => {
+        setSelectedTag(tag);
+    }
+    
     /**
-     * qnaStorage에 localStorage에 저장되어 있는 데이터를 불러와서 초기화!
-     */
+    * qnaStorage에 localStorage에 저장되어 있는 데이터를 불러와서 초기화!
+    */
     qnaStorage.setList(list);
     qnaStorage.setTags(tags);
 
     /**
-     * 게시글 작성 또는 수정할 때 모달창을 표시하는 상태 변수
-     * showModal - 질문 게시글 작성/수정할 수 있는 모달을 표시
-     */
+    * 게시글 작성 또는 수정할 때 모달창을 표시하는 상태 변수
+    * showModal - 질문 게시글 작성/수정할 수 있는 모달을 표시
+    */
     const [showModal, setShowModal] = React.useState(false);
+
 
     /**
      * 하위 컴포넌트로 넘겨줄 상태 변수들
@@ -81,9 +98,10 @@ function Board(props) {
         currentIndex,
         setCurrentIndex,
         showModal,
-        setShowModal
+        setShowModal,
     }
 
+    
     function setInitState() {
         setShowModal(false);
         setList(qnaStorage.list);
@@ -127,10 +145,12 @@ function Board(props) {
                  */
             }
             <ul>
-                <li><button>All</button></li>
+                <li><button onClick={() => selectedTagHandler('All')}>All</button></li>
                 {
                     Array.from(tags).map((tag) => {
-                        return <li key={tag}><button>{tag}</button></li>
+                        return <li key={tag}>
+                            <button onClick={() => selectedTagHandler(tag)}>{tag}</button>
+                            </li>
                     })
                 }
             </ul>
@@ -147,7 +167,7 @@ function Board(props) {
                             /**
                              * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
                              */
-                            qnaStorage.list.map((item, index) => {
+                            selectedTagList().map((item, index) => {
                                 return <Post key={index} index={index} item={item} states={states} setInitState={setInitState} />
                             })
                         }

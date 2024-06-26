@@ -71,6 +71,9 @@ function Board(props) {
     const [showItem, setShowItem] = React.useState(false);
     const [currentIndex, setCurrentIndex] = React.useState(false);
 
+    const [keyword, setKeyword] = React.useState('');
+    const [mode, setMode] = React.useState('default');
+
     /**
      * qnaStorage에 localStorage에 저장되어 있는 데이터를 불러와서 초기화!
      */
@@ -100,7 +103,7 @@ function Board(props) {
         setShowModal(false);
         setList(qnaStorage.list);
         setTags(localStorage.createQnaTagList(qnaStorage.list));
-        setCount(qnaStorage);
+        setCount(qnaStorage.count);
     }
 
     // 각각 경과시간과 경과일을 반환하는 함수
@@ -177,6 +180,27 @@ function Board(props) {
         setShowItem(true);
     }
 
+    const changeHandler = (event) => {
+        setMode('default');
+        setKeyword(event.target.value);
+    }
+
+    function searchList(keyword) {
+        const result = Array.from(list).filter((item) => {
+            return item.data.title.includes(keyword) || item.data.contents.includes(keyword) || item.data.code.includes(keyword);
+        })
+
+        return result;
+    }
+
+    const searchHandler = (event) => {
+        if (event.type === 'click' || (event.type === 'keydown' && event.key === 'Enter')) {
+            setMode('search');
+        } else {
+            return null;
+        }
+    }
+
     /**
      * 글 작성 버튼을 클릭하였을 때 모달이 표시되도록 구현
      */
@@ -226,6 +250,11 @@ function Board(props) {
                     })
                 }
             </ul>
+            <div>
+                <input type="text" name="keyword" onChange={changeHandler} onKeyDown={searchHandler} />
+                <button className="board-button" id="search" onClick={searchHandler}>검색</button>
+                <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
+            </div>
             {
                 /**
                  * 게시판 영역
@@ -244,13 +273,16 @@ function Board(props) {
                                 /**
                                  * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
                                  */
-                                qnaStorage.list.map((item, index) => {
+                                mode === 'default' && qnaStorage.list.map((item, index) => {
+                                    return <Post key={index} index={index} item={item} states={states} setInitState={setInitState} />
+                                })
+                            }{
+                                mode === 'search' && searchList(keyword).map((item, index) => {
                                     return <Post key={index} index={index} item={item} states={states} setInitState={setInitState} />
                                 })
                             }
                         </tbody>
                     </table>
-                    <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
                 </div>
                 <div className="trend">
                     <table className="board-table hot-topics">

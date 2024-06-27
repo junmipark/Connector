@@ -370,3 +370,7 @@
     font-weight: bold;
     margin-bottom: 10px;
 }
+
+.modal-file>* {
+    width: 100%;
+}

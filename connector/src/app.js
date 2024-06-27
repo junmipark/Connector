@@ -950,9 +950,10 @@ function Modal(props) {
      */
     const fileChangeHandler = (e) => {
         const file = e.target.files[0];
+        const fileTypes = ['image/jpeg', 'image/png'];
 
         if (file) {
-            if (file.type === 'image/jpeg' || file.type === 'image/png') {       // 사용자가 선택한 파일의 형식 체크
+            if (fileTypes.includes(file.type)) {       // 사용자가 선택한 파일의 형식 체크
                 // 선택한 이미지 파일을 FileReader를 통해 Base64로 인코딩
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -1059,15 +1060,18 @@ function Modal(props) {
                     onChange={changeHandler} placeholder="소스코드"></textarea>
                 <textarea className="post-contents" title="contents" value={contents}
                     onChange={changeHandler} placeholder="게시글 내용"></textarea>
-                {/**이미지 업로드 기능 구현 */}
-                <input id="fileInput" type="file" accept=".jpg" onChange={fileChangeHandler} />
-                {previewFile &&
-                    <img src={previewFile} alt="미리보기" style={{ maxWidth: '100px', maxHeight: '100px' }} onClick={openImagePopup} />}
-                {/* 수정할 때 기존 이미지 데이터가 있으면 미리보기에 보여줌 */}
-                {currentItem && currentItem.data.imageFile && (
-                    <img src={currentItem.data.imageFile} alt="저장된 이미지" style={{ maxWidth: '100px', maxHeight: '100px' }} onClick={openImagePopup} />
-                )}
-
+                <div className="modal-file">
+                    {/**이미지 업로드 기능 구현 */}
+                    <input id="fileInput" type="file" accept=".jpg, .png" onChange={fileChangeHandler} />
+                    <div>
+                        {previewFile &&
+                            <img src={previewFile} alt="미리보기" style={{ maxWidth: '100px', maxHeight: '100px' }} onClick={openImagePopup} />}
+                        {/* 수정할 때 기존 이미지 데이터가 있으면 미리보기에 보여줌 */}
+                        {currentItem && currentItem.data.imageFile && (
+                            <img src={currentItem.data.imageFile} alt="저장된 이미지" style={{ maxWidth: '100px', maxHeight: '100px' }} onClick={openImagePopup} />
+                        )}
+                    </div>
+                </div>
                 {/* 게시글 작성시만 비밀번호 입력 가능 */}
                 <input type="text" title="tags" value={tags}
                     onChange={changeHandler} placeholder="태그: 콤마(,)로 구분하여 작성하세요." />

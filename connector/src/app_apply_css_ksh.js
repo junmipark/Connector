@@ -1,8 +1,6 @@
 import React from "react";
 import QnaStorage from "./model/QnaStorage_ksh";
 
-import style from "./css/app.css";
-
 // QnA 데이터를 저장하는 저장소
 const qnaStorage = new QnaStorage();
 
@@ -44,7 +42,6 @@ function App(props) {
     const localStorage = {
         qnaList,
         qnaTagList,
-        createQnaTagList,
         lastIndex
     }
 
@@ -64,18 +61,36 @@ function Board(props) {
     const [tags, setTags] = React.useState(localStorage.qnaTagList);
     const [isNew, setIsNew] = React.useState(0);
     const [currentIndex, setCurrentIndex] = React.useState(false);
+    
+    //태그 선택 상태 추가, 기본값 All
+    const [selectedTag, setSelectedTag] = React.useState(['All']);
 
+    //선택된 태그 변경 핸들러
+    const selectedTagHandler = (tag) => {
+        setSelectedTag(tag);
+    }
+
+    //선택된 태그의 게시글 목록
+    const selectedTagList = () => {
+        return selectedTag === 'All' ? list : list.filter((item) => {
+            console.log(selectedTag, item.data.tags); //디버그
+            return item.data.tags.includes(selectedTag)
+        });
+    }
+
+    
     /**
-     * qnaStorage에 localStorage에 저장되어 있는 데이터를 불러와서 초기화!
-     */
+    * qnaStorage에 localStorage에 저장되어 있는 데이터를 불러와서 초기화!
+    */
     qnaStorage.setList(list);
     qnaStorage.setTags(tags);
 
     /**
-     * 게시글 작성 또는 수정할 때 모달창을 표시하는 상태 변수
-     * showModal - 질문 게시글 작성/수정할 수 있는 모달을 표시
-     */
+    * 게시글 작성 또는 수정할 때 모달창을 표시하는 상태 변수
+    * showModal - 질문 게시글 작성/수정할 수 있는 모달을 표시
+    */
     const [showModal, setShowModal] = React.useState(false);
+
 
     /**
      * 하위 컴포넌트로 넘겨줄 상태 변수들
@@ -84,13 +99,14 @@ function Board(props) {
         currentIndex,
         setCurrentIndex,
         showModal,
-        setShowModal
+        setShowModal,
     }
 
+    
     function setInitState() {
         setShowModal(false);
         setList(qnaStorage.list);
-        setTags(localStorage.createQnaTagList(qnaStorage.list));
+        setTags(qnaStorage.tags);
         setIsNew(isNew + 1);
     }
 
@@ -98,14 +114,8 @@ function Board(props) {
      * 글 작성 버튼을 클릭하였을 때 모달이 표시되도록 구현
      */
     const writeHandler = () => {
-        if (!showModal) {
-            qnaStorage.setIndexDefault();
-            setCurrentIndex(-1);
-            setShowModal(true);
-        } else {
-            window.alert('글쓰기 창이 활성화되어 있습니다! 작성 종료 후 다시 시도하세요.');
-            return null;
-        }
+        qnaStorage.setIndexDefault();
+        setShowModal(true);
     }
 
     /**
@@ -113,19 +123,18 @@ function Board(props) {
      */
     React.useEffect(() => {
         window.localStorage.setItem('qnaList', JSON.stringify(list));
-        window.localStorage.setItem('qnaTagList', JSON.stringify(tags));
         window.localStorage.setItem('lastIndex', currentIndex);
     }, [isNew, list, tags, currentIndex]);
 
     return (
-        <div className="board">
+        <>
             {
                 /**
                  * 모달창을 띄운 상태인지 확인하여, 모달창이 활성화(showModal === true) 된 경우에만 보이도록 구현
                  */
                 showModal ? <Modal states={states} setInitState={setInitState} /> : null
             }
-            <div className="board-title">
+            <div>
                 <h1>Connector</h1>
                 <h2>개발자 QnA 게시판</h2>
             </div>
@@ -135,11 +144,13 @@ function Board(props) {
                  * 태그를 선택하여 해당하는 태그만 조회할 수 있도록 구현
                  */
             }
-            <ul className="board-tags">
-                <li><button className="board-tag">All</button></li>
+            <ul>
+                <li><button onClick={() => selectedTagHandler('All')}>All</button></li>
                 {
                     Array.from(tags).map((tag) => {
-                        return <li key={tag}><button className="board-tag">{tag}</button></li>
+                        return <li key={tag}>
+                            <button onClick={() => selectedTagHandler(tag)}>{tag}</button>
+                            </li>
                     })
                 }
             </ul>
@@ -148,22 +159,22 @@ function Board(props) {
                  * 게시판 영역
                  */
             }
-            <div className="board-area">
-                <button className="board-button" id="write" onClick={writeHandler}>글쓰기</button>
-                <table className="board-table">
+            <div>
+                <button onClick={writeHandler}>글쓰기</button>
+                <table>
                     <tbody>
                         {
                             /**
                              * qnaStorage에 있는 질문 게시글을 모두 꺼내와 표시
                              */
-                            qnaStorage.list.map((item, index) => {
+                            selectedTagList().map((item, index) => {
                                 return <Post key={index} index={index} item={item} states={states} setInitState={setInitState} />
                             })
                         }
                     </tbody>
                 </table>
             </div>
-        </div>
+        </>
     )
 }
 
@@ -191,25 +202,23 @@ function Post(props) {
     }
     return (
         <>
-            <tr className={`post ${index === states.currentIndex && 'clicked'}`} onClick={() => { readHandler(index); }}>
-                <td className="post-item">
-                    <div>
-                        <p>{item.data.title}</p>
-                        <p className="post-text">{item.createdDate}</p>
-                        <p className="post-tags">
-                            {
-                                Array.from(item.data.tags).map((tag) => {
-                                    return <span className="post-tag" key={tag}>{tag}</span>
-                                })
-                            }
-                        </p>
-                    </div>
-                    <div className="post-reply">
-                        <p className="post-reply-text">답변</p>
-                        <p className="post-reply-size">{item.answerList.length}</p>
-                    </div>
-                </td >
-            </tr >
+            <tr onClick={() => { readHandler(index); }}>
+                <td>
+                    <p>{item.data.title}</p>
+                    <p>{item.createdDate}</p>
+                    <p>
+                        {
+                            Array.from(item.data.tags).map((tag) => {
+                                return <span key={tag}>{tag}</span>
+                            })
+                        }
+                    </p>
+                </td>
+                <td>
+                    <p>답변</p>
+                    <p>{item.answerList.length}</p>
+                </td>
+            </tr>
             {
                 showItem && states.currentIndex === props.index && <PostItem item={item} index={index} states={states} setInitState={setInitState} />
             }
@@ -230,67 +239,8 @@ function PostItem(props) {
     }
 
     const updateHandler = (index) => {
-        if (!states.showModal) {
-            qnaStorage.setCurrentIndex(index);
-            states.setShowModal(true);
-        } else {
-            window.alert('글쓰기 창이 활성화되어 있습니다! 작성 종료 후 다시 시도하세요.');
-            return null;
-        }
-    }
-
-    /**
-     * prompt를 통해 입력받은 값과 게시글의 비밀번호 값을 비교
-     * 비교 값이 참일 경우 수정 가능
-     */
-    const editPasswordCheckHandler = (index) => {
-        if (!states.showModal) {
-            const bbsPassword = prompt('비밀번호를 입력하세요.');
-
-            if (bbsPassword === null) {
-                return;
-            }
-
-            qnaStorage.setCurrentIndex(index);
-            const currentItem = qnaStorage.getItem();
-            const { password } = currentItem.data;
-
-            if (bbsPassword === password) {
-                updateHandler();
-            } else {
-                window.alert('비밀번호가 다릅니다!');
-            }
-        } else {
-            window.alert('글쓰기 창이 활성화되어 있습니다! 작성 종료 후 다시 시도하세요.');
-            return null;
-        }
-    }
-
-    /**
-     * prompt를 통해 입력받은 값과 게시글의 비밀번호 값을 비교
-     * 비교 값이 참일 경우 삭제 가능
-     */
-    const deletePasswordCheckHandler = (index) => {
-        if (!states.showModal) {
-            const bbsPassword = prompt('비밀번호를 입력하세요.');
-
-            if (bbsPassword === null) {
-                return;
-            }
-
-            qnaStorage.setCurrentIndex(index);
-            const currentItem = qnaStorage.getItem();
-            const { password } = currentItem.data;
-
-            if (bbsPassword === password) {
-                deleteHandler();
-            } else {
-                window.alert('비밀번호가 다릅니다!');
-            }
-        } else {
-            window.alert('글쓰기 창이 활성화되어 있습니다! 작성 종료 후 다시 시도하세요.');
-            return null;
-        }
+        qnaStorage.setCurrentIndex(index);
+        states.setShowModal(true);
     }
 
     const deleteHandler = (index) => {
@@ -307,26 +257,21 @@ function PostItem(props) {
 
     return (
         <tr>
-            <td>
-                <div className="post-details">
-                    <h3 className="post-title">{item.data.title}</h3>
-                    <div className="post-dates">
-                        <span className="post-text">작성: {item.createdDate}</span>
-                        <span className="post-text">최종 수정: {item.modifiedDate}</span>
-                    </div>
-                    {item.data.code.length > 0 && <pre className="post-contents post-code">{item.data.code}</pre>}
-                    <pre className="post-contents">{item.data.contents}</pre>
-                    <div className="post-tags">
-                        {
-                            Array.from(item.data.tags).map((tag) => {
-                                return <button className="board-tag" key={tag}>{tag}</button>
-                            })
-                        }
-                    </div>
-                    <div className="post-buttons">
-                        <button className="board-button" onClick={() => { editPasswordCheckHandler(index) }}>수정하기</button>
-                        <button className="board-button" onClick={() => { deletePasswordCheckHandler(index) }}>삭제하기</button>
-                    </div>
+            <td colSpan={2}>
+                <div>
+                    <h1>{item.data.title}</h1>
+                    <span>작성: {item.data.createdDate}</span>
+                    <span>최종 수정: {item.data.modifiedDate}</span>
+                    <pre>{item.data.code}</pre>
+                    <pre>{item.data.contents}</pre>
+                    {
+                        Array.from(item.data.tags).map((tag) => {
+                            return <button key={tag}>{tag}</button>
+                        })
+                    }
+                    <button onClick={() => { updateHandler(index) }}>수정하기</button>
+                    <button onClick={() => { deleteHandler(index) }}>삭제하기</button>
+                    <hr />
                 </div>
                 <Reply states={newStates} setInitState={setInitState} />
             </td>
@@ -336,13 +281,6 @@ function PostItem(props) {
 
 function Reply(props) {
     const [states, setInitState] = [props.states, props.setInitState];
-    const [currentReply, setCurrentReply] = React.useState(-1);
-
-    const newStates = {
-        ...states,
-        currentReply,
-        setCurrentReply
-    }
 
     qnaStorage.setCurrentIndex(states.questionIndex);
     const currentItem = qnaStorage.getItem();
@@ -350,28 +288,18 @@ function Reply(props) {
     /**
      * contents --> 답변 작성을 위해 사용하는 상태 변수
      * changeHandler --> textarea 값이 바뀔 때마다 contents 값을 변경하는 변수
-     * password 추가
      */
     const [contents, setContents] = React.useState('');
-    const [password, setPassword] = React.useState('');
-
     const changeHandler = (event) => {
-        switch (event.target.title) {
-            case 'contents':
-                setContents(event.target.value);
-                break;
-            case 'password':
-                setPassword(event.target.value.trim());
-                break;
-        }
+        setContents(event.target.value);
     }
 
     const writeHandler = (event) => {
         if (contents.trim() === '') {
-            window.alert('답변과 비밀번호를 정확히 입력하세요!');
+            window.alert('답변을 정확히 입력하세요!');
             return null;
         }
-        let result = qnaStorage.createAnswer({ contents, password });
+        let result = qnaStorage.createAnswer({ contents });
         switch (result) {
             case false:
                 window.alert('답변이 등록되지 않았습니다.');
@@ -380,24 +308,21 @@ function Reply(props) {
                 window.alert('답변이 등록되었습니다.');
         }
         setContents('');
-        setPassword('');
         setInitState();
     }
 
     return (
-        <div className="post-details">
-            <div className="answer-textarea">
+        <>
+            <div>
                 <textarea title="contents" placeholder="답변을 작성하세요." value={contents} onChange={changeHandler}></textarea>
-                <input type="password" title="password" value={password}
-                    onChange={changeHandler} placeholder="비밀번호를 입력하세요." />
-                <button className="board-button" onClick={writeHandler}>등록하기</button>
+                <button onClick={writeHandler}>등록하기</button>
             </div>
             {
                 currentItem.answerList.map((item, index) => {
-                    return <ReplyItem item={item} index={index} states={newStates} setInitState={setInitState} />
+                    return <ReplyItem item={item} index={index} states={states} setInitState={setInitState} />
                 })
             }
-        </div>
+        </>
     )
 }
 
@@ -405,120 +330,65 @@ function ReplyItem(props) {
     const [item, index] = [props.item, props.index];
     const [states, setInitState] = [props.states, props.setInitState];
 
-    const [contents, setContents] = React.useState(item.data.contents);
     const [showTextarea, setShowTextarea] = React.useState(false);
-    const [answerPassword, setAnswerPassword] = React.useState(item.data.password);
-
-    function isCurrentItem() {
-        return showTextarea && index === states.currentReply;
-    }
+    const [contents, setContents] = React.useState(item.data.contents);
 
     const changeHandler = (event) => {
         setContents(event.target.value);
     }
 
-    /**
-     * prompt를 통해 입력받은 값과 답변 게시글의 비밀번호 비교 값을 반환
-     */
-    const passwordCheckHandler = (index) => {
-        if (!states.showModal) {
-            // 사용자에게 비밀번호 입력 요청
-            const checkPassword = prompt('비밀번호를 입력하세요.');
-
-            // 사용자가 취소 버튼을 클릭시
-            if (checkPassword === null) {
-                return;
-            }
-
-            // 현재 댓글의 데이터 반환
-            qnaStorage.setCurrentIndex(index);
-            const currentItem = qnaStorage.getItem();
-
-            // 답변 게시글 비밀번호 반환
-            const selectedAnswer = currentItem.answerList[index];
-            const password = selectedAnswer.data.password;
-
-            if (checkPassword === password) {
-                return true;
-            } else {
-                window.alert('비밀번호가 다릅니다!');
-                return false;
-            }
-        } else {
-            window.alert('답변 작성 중에는 다른 작업을 할 수 없습니다. 작성을 완료하거나 취소한 후 다시 시도하세요.');
-            return null;
-        }
-    }
-
-    /**
-     * 비밀번호 값을 비교하여 얻은 값을 통해 실행 여부
-     */
     const clickHandler = (index) => {
-        const confirmed = passwordCheckHandler(index);
-        if (confirmed) {
-            states.setCurrentReply(index);
-            setShowTextarea(true);
-        }
+        setShowTextarea(true);
     }
 
     const updateHandler = (index) => {
-        const result = qnaStorage.updateAnswer({ contents, password: answerPassword }, index);
+        const result = qnaStorage.updateAnswer({ contents }, index);
         const resultText = result ? '답변이 수정되었습니다.' : '답변이 수정되지 않았습니다.';
         window.alert(resultText);
         setShowTextarea(false);
         setInitState();
     }
 
-    /**
-     * 비밀번호 값을 비교하여 얻은 값을 통해 실행 여부
-     */
     const deleteHandler = (index) => {
-        const confirmed = passwordCheckHandler(index);
-        if (confirmed) {
-            if (window.confirm('게시글을 삭제하시겠습니까?')) {
-                const result = qnaStorage.deleteAnswer(index);
-                const resultText = result ? '답변이 삭제되었습니다.' : '답변이 삭제되지 않았습니다.';
-                window.alert(resultText);
-                setInitState();
-            } else {
-                qnaStorage.setIndexDefault();
-            }
+        if (window.confirm('게시글을 삭제하시겠습니까?')) {
+            const result = qnaStorage.deleteAnswer(index);
+            const resultText = result ? '답변이 삭제되었습니다.' : '답변이 삭제되지 않았습니다.';
+            window.alert(resultText);
+            setInitState();
+        } else {
+            qnaStorage.setIndexDefault();
         }
     }
 
     return (
-        <div className="answer-item">
+        <div>
             <span>{index + 1}</span>
+            <pre>{item.data.contents}</pre>
+            <span>작성: {item.createdDate}</span>
+            <span>최종 수정: {item.modifiedDate}</span>
             {
                 /**
                  * showTextArea === true
                  * (현재 상태가 수정모드인 경우, textarea를 보이도록 구현)
                  */
-                isCurrentItem() ?
-                    <textarea className="post-contents" title="contents" onChange={changeHandler} value={contents}></textarea>
-                    :
-                    <pre className="post-contents">{item.data.contents}</pre>
+                showTextarea && (
+                    <textarea title="newContents" onChange={changeHandler} value={contents}></textarea>
+                )
             }
-            <div className="post-dates">
-                <span className="post-text">작성: {item.createdDate}</span>
-                <span className="post-text">최종 수정: {item.modifiedDate}</span>
-            </div>
-            <div className="post-buttons">
-                <button className="board-button" onClick={() => {
-                    if (isCurrentItem()) {
-                        updateHandler(index);
-                    } else {
-                        clickHandler(index);
-                    }
-                }}>수정하기</button>
-                <button className="board-button" onClick={() => {
-                    if (isCurrentItem()) {
-                        setShowTextarea(false);
-                    } else {
-                        deleteHandler(index);
-                    }
-                }}>{isCurrentItem() ? '취소하기' : '삭제하기'}</button>
-            </div>
+            <button onClick={() => {
+                if (showTextarea) {
+                    updateHandler(index);
+                } else {
+                    clickHandler(index);
+                }
+            }}>수정하기</button>
+            <button onClick={() => {
+                if (showTextarea) {
+                    setShowTextarea(false);
+                } else {
+                    deleteHandler(index);
+                }
+            }}>{showTextarea ? '취소하기' : '삭제하기'}</button>
         </div>
     )
 }
@@ -532,21 +402,19 @@ function Modal(props) {
      * 즉 게시글을 새로 작성하는 것을 뜻함
      */
     const currentItem = qnaStorage.getItem();
+
     /**
      * 제목 title, 소스코드 code, 내용 contents, 태그 tags
-     * 비밀번호 password 추가
      */
     const [title, setTitle] = React.useState(currentItem ? currentItem.data.title : '');
-    const [code, setCode] = React.useState(currentItem ? currentItem.data.code : '');
+    const [code, setCode] = React.useState(currentItem ? currentItem.data.sourceCode : '');
     const [contents, setContents] = React.useState(currentItem ? currentItem.data.contents : '');
-    const [password, setPassword] = React.useState(currentItem ? currentItem.data.password : '');
     const [tags, setTags] = React.useState(currentItem ? Array.from(currentItem.data.tags).join() : '');
 
     function initStates() {
         setTitle('');
         setContents('');
         setCode('');
-        setPassword('');
         setTags('');
     }
 
@@ -560,7 +428,7 @@ function Modal(props) {
         for (const i in newTags) {
             newTags[i] = newTags[i].trim();
         }
-        return Array.from(new Set(newTags));
+        return newTags;
     }
 
     const changeHandler = (event) => {
@@ -570,9 +438,6 @@ function Modal(props) {
                 break;
             case 'contents':
                 setContents(event.target.value);
-                break;
-            case 'password':
-                setPassword(event.target.value.trim());
                 break;
             case 'tags':
                 setTags(event.target.value);
@@ -594,11 +459,10 @@ function Modal(props) {
             title,
             code,
             contents,
-            password,
             'tags': newTags
         }
 
-        if (title === '' || contents === '' || password === '' || newTags.length < 1) {
+        if (title === '' || contents === '' || newTags.length < 1) {
             return null;
         }
 
@@ -622,24 +486,18 @@ function Modal(props) {
     }
 
     return (
-        <dialog open className="modal">
+        <dialog open>
             <input type="text" title="title" value={title}
-                onChange={changeHandler} placeholder="제목" />
-            <textarea className="post-contents post-code" title="code" value={code}
-                onChange={changeHandler} placeholder="소스코드"></textarea>
-            <textarea className="post-contents" title="contents" value={contents}
-                onChange={changeHandler} placeholder="게시글 내용"></textarea>
-            {/* 게시글 작성시만 비밀번호 입력 가능 */}
-            {!currentItem && (
-                <input type="password" title="password" value={password}
-                    onChange={changeHandler} placeholder="비밀번호를 입력하세요." />
-            )}
+                onChange={changeHandler} placeholder="제목을 입력하세요." />
+            <textarea title="code" value={code}
+                onChange={changeHandler} placeholder="소스코드를 기입하세요."></textarea>
+            <textarea title="contents" value={contents}
+                onChange={changeHandler} placeholder="내용을 입력하세요."></textarea>
             <input type="text" title="tags" value={tags}
-                onChange={changeHandler} placeholder="태그: 콤마(,)로 구분하여 작성하세요." />
-            <div className="modal-buttons">
-                <button className="board-button" onClick={confirmHandler}>등록하기</button>
-                <button className="board-button" onClick={cancleHandler}>취소하기</button>
-            </div>
+                onChange={changeHandler} placeholder="콤마(,)로 구분하여 작성하세요." />
+            <hr />
+            <button onClick={confirmHandler}>등록하기</button>
+            <button onClick={cancleHandler}>취소하기</button>
         </dialog>
     )
 }

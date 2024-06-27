@@ -281,13 +281,13 @@
 
 .answer-item {
     display: flex;
-    margin: 30px 0px;
+    gap: 10px;
     border-bottom: 1px solid gainsboro;
 }
 
 .answer-item>.post-reply {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
 }
 
 .answer-area {

@@ -418,6 +418,7 @@ function Post(props) {
 function PostItem(props) {
     const [item] = [props.item];
     const [states, setInitState] = [props.states, props.setInitState];
+    const [popupWindows, setPopupWindows] = React.useState([]);
     /**
      * 질문 게시글 하위에 존재하는 답변 게시글에 전달해줄 상태 변수 데이터
      * 기존의 상태 변수 객체에서 questionIndex라고 하는 질문 게시글의 index값을 넘겨줌(종속성 부여)
@@ -429,11 +430,12 @@ function PostItem(props) {
 
     function getLocaleString(date) {
         return new Date(date).toLocaleString('ko-KR');
-    }    /**
-    * prompt를 통해 입력받은 값과 게시글의 비밀번호 값을 비교
-    * 비교 값이 참일 경우 수정 가능
-    */
+    }
 
+    /**
+     * prompt를 통해 입력받은 값과 게시글의 비밀번호 값을 비교
+     * 비교 값이 참일 경우 수정 가능
+     */
     const editPasswordCheckHandler = (id) => {
         if (!states.showModal) {
             const bbsPassword = prompt('비밀번호를 입력하세요.');
@@ -507,6 +509,50 @@ function PostItem(props) {
         setInitState();
     }
 
+    /**
+     * 이미지 클릭시 새로운 팝업창 열기
+     */
+    const openImagePopup = () => {
+        const previewFile = item.data.imageFile;
+        const popupWidth = 600;
+        const popupHeight = 600;
+
+        // 화면 중앙에 팝업 위치 계산
+        const left = (window.screen.width - popupWidth) / 2;
+        const top = (window.screen.height - popupHeight) / 2;
+
+        // 새로운 팝업 창 이름 생성
+        const popupName = `popup${popupWindows.length + 1}`;
+
+        // 새로운 팝업 창 열기
+        const newPopupWindow = window.open(
+            '', popupName, `height=${popupHeight}, width=${popupWidth}, left=${left}, top=${top}`
+        );
+
+        if (newPopupWindow) {
+            // 팝업 창을 닫으면 popupWindows 배열에서 제거
+            newPopupWindow.addEventListener('unload', () => {
+                setPopupWindows(popupWindows.filter(window => window !== newPopupWindow));
+            });
+
+            // 새로운 팝업 창을 popupWindows 배열에 추가
+            setPopupWindows([...popupWindows, newPopupWindow]);
+
+            newPopupWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Image Preview</title>
+                    </head>
+                    <body style="margin: 0; display: flex; justify-content: center; align-items: center;">
+                        <img src="${previewFile}" style="max-width: 100%; max-height: 100%;">
+                    </body>
+                </html>
+            `);
+        } else {
+            alert('팝업 창이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.');
+        }
+    };
+
     return (
         <tr>
             <td>
@@ -517,6 +563,11 @@ function PostItem(props) {
                     </div>
                     {item.data.code.length > 0 && <pre className="post-contents post-code">{item.data.code}</pre>}
                     <pre className="post-contents">{item.data.contents}</pre>
+                    <div>
+                        {item.data.imageFile &&
+                            <img src={item.data.imageFile} alt="게시물 이미지" style={{ maxWidth: '300px', maxHeight: '300px' }} onClick={openImagePopup} />
+                        }
+                    </div>
                     <div className="post-tags">
                         {
                             Array.from(item.data.tags).map((tag) => {
@@ -737,13 +788,18 @@ function Modal(props) {
     const [code, setCode] = React.useState(currentItem ? currentItem.data.code : '');
     const [contents, setContents] = React.useState(currentItem ? currentItem.data.contents : '');
     const [password, setPassword] = React.useState(currentItem ? currentItem.data.password : '');
+    const [selectedFile, setSelectedFile] = React.useState(null);
+    const [previewFile, setPreviewFile] = React.useState(null);
     const [tags, setTags] = React.useState(currentItem ? Array.from(currentItem.data.tags).join() : '');
+
+    const [popupWindows, setPopupWindows] = React.useState([]);
 
     function initStates() {
         setTitle('');
         setContents('');
         setCode('');
         setPassword('');
+        setSelectedFile(null);
         setTags('');
     }
 
@@ -780,18 +836,65 @@ function Modal(props) {
     }
 
     /**
+     * 이미지 파일 선택
+     */
+    const fileChangeHandler = (e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+            if (file.type === 'image/jpeg') {       // 사용자가 선택한 파일의 형식 체크
+                // 선택한 이미지 파일을 FileReader를 통해 Base64로 인코딩
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    setPreviewFile(e.target.result);
+                };
+                reader.readAsDataURL(file);
+                setSelectedFile(file);
+            } else {
+                window.alert('JPG 형식의 이미지 파일을 선택해주세요.');
+                setSelectedFile(null);
+                setPreviewFile(null);
+            }
+        } else {
+            setSelectedFile(null);
+            setPreviewFile(null);
+        }
+    };
+
+    /**
      * [confirmHandler]
      * 게시글 작성 완료 버튼을 눌렀을 때,
      * 새로운 데이터 값을 qnaStorage에 저장(write)하거나
      * 기존의 데이터 값을 변경(update)할 때 데이터를 처리하는 것을 담당
+     * 이미지 파일을 FileReader를 통해 Base64 텍스트 데이터로 인코딩
      */
-    const confirmHandler = () => {
+    const confirmHandler = async () => {
         const newTags = createTags(tags);
+        let imageFileBase64 = currentItem ? currentItem.data.imageFile : null;
+
+        if (selectedFile) {
+            const reader = new FileReader();
+            reader.readAsDataURL(selectedFile);
+            await new Promise((resolver, reject) => {
+                reader.onload = () => {
+                    // 인코딩된 값을 imageFileBase64에 할당
+                    imageFileBase64 = reader.result;
+                    resolver();
+                }
+                reader.onerror = reject;
+            });
+            // 선택된 파일이 없을 시 null 값 반환
+            if (!imageFileBase64) {
+                return;
+            }
+        }
+
         const newItem = {
             title,
             code,
             contents,
             password,
+            imageFile: imageFileBase64,
             'tags': newTags
         }
 
@@ -818,6 +921,51 @@ function Modal(props) {
         states.setShowModal(false);
     }
 
+    /**
+     * 이미지 클릭시 새로운 팝업창 열기
+     */
+    const openImagePopup = () => {
+        let imageFile = currentItem ? currentItem.data.imageFile : previewFile;
+        
+        const popupWidth = 600;
+        const popupHeight = 600;
+
+        // 화면 중앙에 팝업 위치 계산
+        const left = (window.screen.width - popupWidth) / 2;
+        const top = (window.screen.height - popupHeight) / 2;
+
+        // 새로운 팝업 창 이름 생성
+        const popupName = `popup${popupWindows.length + 1}`;
+
+        // 새로운 팝업 창 열기
+        const newPopupWindow = window.open(
+            '', popupName, `height=${popupHeight}, width=${popupWidth}, left=${left}, top=${top}`
+        );
+
+        if (newPopupWindow) {
+            // 팝업 창을 닫으면 popupWindows 배열에서 제거
+            newPopupWindow.addEventListener('unload', () => {
+                setPopupWindows(popupWindows.filter(windowItem => windowItem !== newPopupWindow));
+            });
+
+            // 새로운 팝업 창을 popupWindows 배열에 추가
+            setPopupWindows([...popupWindows, newPopupWindow]);
+
+            newPopupWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Image Preview</title>
+                    </head>
+                    <body style="margin: 0; display: flex; justify-content: center; align-items: center;">
+                        <img src="${imageFile}" style="max-width: 100%; max-height: 100%;">
+                    </body>
+                </html>
+            `);
+        } else {
+            alert('팝업 창이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.');
+        }
+    };
+
     return (
         <dialog open className="modal">
             <input type="text" title="title" value={title}
@@ -826,6 +974,15 @@ function Modal(props) {
                 onChange={changeHandler} placeholder="소스코드"></textarea>
             <textarea className="post-contents" title="contents" value={contents}
                 onChange={changeHandler} placeholder="게시글 내용"></textarea>
+            <input id="fileInput" type="file" accept=".jpg" onChange={fileChangeHandler} />
+            
+            {previewFile &&
+                <img src={previewFile} alt="미리보기" style={{ maxWidth: '100px', maxHeight: '100px' }} onClick={openImagePopup} />}
+            {/* 수정할 때 기존 이미지 데이터가 있으면 미리보기에 보여줌 */}
+            {currentItem && currentItem.data.imageFile && (
+                <img src={currentItem.data.imageFile} alt="저장된 이미지" style={{ maxWidth: '100px', maxHeight: '100px' }} onClick={openImagePopup} />
+            )}
+            
             {/* 게시글 작성시만 비밀번호 입력 가능 */}
             {!currentItem && (
                 <input type="password" title="password" value={password}

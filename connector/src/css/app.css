@@ -281,13 +281,8 @@
 
 .answer-item {
     display: flex;
-    gap: 10px;
+    gap: 20px;
     border-bottom: 1px solid gainsboro;
-}
-
-.answer-item>.post-reply {
-    width: 40px;
-    height: 40px;
 }
 
 .answer-area {
@@ -299,7 +294,7 @@
     display: grid;
     gap: 10px;
     width: 100%;
-    padding: 20px;
+    padding: 20px 0;
     box-sizing: border-box;
     border: none;
 }
@@ -328,7 +323,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100vh;
+    height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
     z-index: 3;
 }

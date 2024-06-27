@@ -178,13 +178,13 @@ function Board(props) {
     }
 
     function selectedTagList() {
-        if(selectedTags.length === 0) {
+        if (selectedTags.length === 0) {
             setMode('default');
             return list;
         }
         else {
             return list.filter((item) => {
-                return selectedTags.some(tag=>item.data.tags.includes(tag))
+                return selectedTags.some(tag => item.data.tags.includes(tag))
             });
         }
     }
@@ -291,10 +291,10 @@ function Board(props) {
             <ul className="board-tags">
                 <li>
                     <button className={`board-tag${selectedTags.length === 0 ? " selected" : ""}`}
-                    onClick={() => {
-                        setSelectedTags([]);
-                        setMode('default');
-                    }}>
+                        onClick={() => {
+                            setSelectedTags([]);
+                            setMode('default');
+                        }}>
                         All
                     </button>
                 </li>

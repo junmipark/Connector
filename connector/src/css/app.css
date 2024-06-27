@@ -208,6 +208,12 @@
     margin-bottom: 0;
 }
 
+.post-image>img {
+    width: 100%;
+    max-width: none !important;
+    max-height: none !important;
+}
+
 .post-text {
     font-size: smaller;
     color: gray;

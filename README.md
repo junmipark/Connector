@@ -20,6 +20,8 @@ HTML5/CSS3, JavaScript, React.js
 ### 게시판 뼈대 구축
 - 게시판에 필요한 레이아웃 및 디자인 제작(connector > src > app_base.js)
 - 게시판 구현을 위한 기본 모델 작성(src>model>ItemStorage, Item, QnaStoarge, AnswerItem, QuestionItem)
+### 게시글 작성 & 답변 시스템
+- 비밀번호를 이용하여 게시글 작성/수정 및 답변 작성/수정 구현
 ### 인기 게시글 목록
 - 인기 게시글을 오른쪽에 배치, 클릭 시 인기 게시글로 이동하도록 구현
 - 인기 게시글 기준은 일주일 동안 달린 댓글이 많은 순으로 내림차순 정렬

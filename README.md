@@ -26,4 +26,4 @@ HTML5/CSS3, JavaScript, React.js
 - 검색 결과 또한 작성일을 기준으로 내림차순으로 정렬
 
 ## 발표 자료
-(리액트 프로젝트_개발자 QnA 게시판_CONNECTOR)[https://drive.google.com/file/d/1k-a4IPHdvSQ6tub1VHqTqGGbcHrJshWN/view?usp=sharing]
+[리액트 프로젝트_개발자 QnA 게시판_CONNECTOR](https://drive.google.com/file/d/1k-a4IPHdvSQ6tub1VHqTqGGbcHrJshWN/view?usp=sharing)

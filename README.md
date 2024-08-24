@@ -14,6 +14,8 @@
 HTML5/CSS3, JavaScript, React.js
 
 ## 역할 및 구현 기능
+### 통합 담당자
+- 협업을 위해 Git 및 GitHub를 사용하며, 팀원 브랜치 통합하는 역할을 담당
 ### 게시판 뼈대 구축
 - 게시판에 필요한 레이아웃 및 디자인 제작(connector > src > app_base.js)
 ### 인기 게시글 목록
@@ -22,3 +24,6 @@ HTML5/CSS3, JavaScript, React.js
 ### 검색 기능
 - 키워드를 입력하여 제목, 내용, 소스코드에 해당하는 키워드가 있으면 검색되도록 구현
 - 검색 결과 또한 작성일을 기준으로 내림차순으로 정렬
+
+## 발표 자료
+(리액트 프로젝트_개발자 QnA 게시판_CONNECTOR)[https://drive.google.com/file/d/1k-a4IPHdvSQ6tub1VHqTqGGbcHrJshWN/view?usp=sharing]

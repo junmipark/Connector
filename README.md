@@ -1,5 +1,4 @@
 # CONNECTOR - 개발자 QNA 게시판
-
 ![image](https://github.com/user-attachments/assets/aa0fcff1-5f72-4120-bb76-4a9b78989f84)
 
 ## 주제
@@ -16,9 +15,9 @@ HTML5/CSS3, JavaScript, React.js
 
 ## 역할 및 구현 기능
 ### 게시판 뼈대 구축
-- 게시판에 필요한 레이아웃 및 디자인 제작
+- 게시판에 필요한 레이아웃 및 디자인 제작(connector > src > app_base.js)
 ### 인기 게시글 목록
-- 인기 게시글을 오른쪽에 배치, 클릭 시 인기 게시글로 이동하도록 구현(connector > src > app_base.js)
+- 인기 게시글을 오른쪽에 배치, 클릭 시 인기 게시글로 이동하도록 구현
 - 인기 게시글 기준은 일주일 동안 달린 댓글이 많은 순으로 내림차순 정렬
 ### 검색 기능
 - 키워드를 입력하여 제목, 내용, 소스코드에 해당하는 키워드가 있으면 검색되도록 구현
